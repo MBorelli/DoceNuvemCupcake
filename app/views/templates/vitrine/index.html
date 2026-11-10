@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% from "macros.html" import cupcake %}
+{% block titulo %}Vitrine{% endblock %}
+{% block conteudo %}
+<section class="destaque">
+  <div class="destaque__texto">
+    <h1>Cupcakes artesanais, feitos hoje e entregues na sua porta.</h1>
+    <p>Escolha seus sabores, pague com PIX, cartão ou boleto e acompanhe a entrega em tempo real.</p>
+    <ol class="passos">
+      <li><span>1</span> Escolha na vitrine</li>
+      <li><span>2</span> Pague com segurança</li>
+      <li><span>3</span> Receba fresquinho</li>
+    </ol>
+  </div>
+  <div class="destaque__arte" aria-hidden="true">
+    {{ cupcake("#f7a1c4", "#8b5a3c", "cupcake--grande") }}
+  </div>
+</section>
+
+<section aria-labelledby="titulo-vitrine">
+  <div class="vitrine__cabecalho">
+    <h2 id="titulo-vitrine">Nossa vitrine</h2>
+    <form class="busca" method="get" action="{{ url_for('vitrine.index') }}" role="search">
+      {% if categoria_atual %}<input type="hidden" name="categoria" value="{{ categoria_atual }}">{% endif %}
+      <label class="sr" for="busca">Buscar sabor</label>
+      <input id="busca" type="search" name="q" value="{{ busca }}" placeholder="Buscar sabor…" data-filtro-vitrine>
+      <button class="botao botao--secundario" type="submit">Buscar</button>
+    </form>
+  </div>
+
+  <nav class="chips" aria-label="Categorias">
+    <a class="chip {% if not categoria_atual %}chip--ativo{% endif %}" href="{{ url_for('vitrine.index', q=busca or None) }}">Todos</a>
+    {% for cat in categorias %}
+      <a class="chip {% if categoria_atual == cat %}chip--ativo{% endif %}" href="{{ url_for('vitrine.index', categoria=cat, q=busca or None) }}">{{ cat }}</a>
+    {% endfor %}
+  </nav>
+
+  {% if produtos %}
+    <div class="grade" data-grade-vitrine>
+      {% for p in produtos %}
+        <article class="card {% if not p.disponivel %}card--esgotado{% endif %}" data-busca="{{ (p.nome ~ ' ' ~ p.descricao ~ ' ' ~ p.categoria)|lower }}">
+          <a class="card__imagem" href="{{ url_for('vitrine.produto', produto_id=p.id) }}" tabindex="-1" aria-hidden="true">
+            {{ cupcake(p.cor_cobertura, p.cor_forminha) }}
+            {% if p.destaque %}<span class="card__fita">Mais pedido</span>{% endif %}
+          </a>
+          <div class="card__corpo">
+            <p class="card__categoria">{{ p.categoria }}</p>
+            <h3 class="card__titulo"><a href="{{ url_for('vitrine.produto', produto_id=p.id) }}">{{ p.nome }}</a></h3>
+            <p class="card__descricao">{{ p.descricao }}</p>
+            <div class="card__rodape">
+              <span class="preco">{{ p.preco_centavos|brl }}</span>
+              {% if p.disponivel %}
+                <button class="botao botao--pequeno" type="button"
+                        data-adicionar="{{ p.id }}" data-nome="{{ p.nome }}" data-estoque="{{ p.estoque }}">
+                  Adicionar
+                </button>
+              {% else %}
+                <span class="selo selo--esgotado">Esgotado</span>
+              {% endif %}
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+    <p class="vazio vazio--compacto" data-sem-resultado hidden>Nenhum cupcake encontrado com esse termo.</p>
+  {% else %}
+    <div class="vazio vazio--compacto">
+      <p>Nenhum cupcake encontrado.</p>
+      <a class="botao botao--secundario" href="{{ url_for('vitrine.index') }}">Ver todos</a>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,22 @@
+{# Ilustração do cupcake: as cores vêm do cadastro do produto. Mantenha em
+   sincronia com Loja.cupcake() em static/js/carrinho.js. #}
+{% macro cupcake(cobertura, forminha, classe="") -%}
+<svg class="cupcake {{ classe }}" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+  <ellipse cx="60" cy="110" rx="30" ry="4" fill="rgba(74,44,42,.12)"/>
+  <path d="M30 64h60l-8 44H38z" fill="{{ forminha }}"/>
+  <path d="M44 64l3 44M60 64v44M76 64l-3 44" stroke="rgba(255,255,255,.3)" stroke-width="3"/>
+  <path d="M24 66c-9-1-9-14 1-16-3-11 9-18 18-13 2-11 16-15 24-7 8-7 22-2 21 10 10-1 15 12 7 17 5 7-1 11-6 9z" fill="{{ cobertura }}" stroke="rgba(74,44,42,.15)" stroke-width="1.5"/>
+  <path d="M36 50c6 3 14 3 20 0M64 44c6 3 14 3 20 0" stroke="rgba(255,255,255,.55)" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle cx="62" cy="24" r="8" fill="#d62246"/>
+  <path d="M63 16c2-6 6-9 11-10" stroke="#5b8c3a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <circle cx="59" cy="21" r="2.4" fill="rgba(255,255,255,.65)"/>
+</svg>
+{%- endmacro %}
+
+{% macro selo_status(status) -%}
+<span class="selo selo--{{ status }}">{{ rotulo_status(status) }}</span>
+{%- endmacro %}
+
+{% macro csrf() -%}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{%- endmacro %}

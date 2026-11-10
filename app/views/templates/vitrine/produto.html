@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% from "macros.html" import cupcake %}
+{% block titulo %}{{ produto.nome }}{% endblock %}
+{% block conteudo %}
+<nav class="migalhas" aria-label="Você está em">
+  <a href="{{ url_for('vitrine.index') }}">Vitrine</a> ›
+  <a href="{{ url_for('vitrine.index', categoria=produto.categoria) }}">{{ produto.categoria }}</a> ›
+  <span>{{ produto.nome }}</span>
+</nav>
+
+<article class="produto">
+  <div class="produto__imagem">
+    {{ cupcake(produto.cor_cobertura, produto.cor_forminha, "cupcake--grande") }}
+  </div>
+  <div class="produto__info">
+    <p class="card__categoria">{{ produto.categoria }}</p>
+    <h1>{{ produto.nome }}</h1>
+    <p class="produto__descricao">{{ produto.descricao }}</p>
+    <p class="preco preco--grande">{{ produto.preco_centavos|brl }} <small>/ unidade</small></p>
+
+    {% if produto.disponivel %}
+      <div class="produto__compra">
+        <label for="quantidade">Quantidade</label>
+        <div class="seletor-qtd">
+          <button type="button" class="seletor-qtd__botao" data-passo="-1" aria-label="Diminuir">−</button>
+          <input id="quantidade" type="number" min="1" max="{{ [produto.estoque, 50]|min }}" value="1" inputmode="numeric">
+          <button type="button" class="seletor-qtd__botao" data-passo="1" aria-label="Aumentar">+</button>
+        </div>
+        <button class="botao" type="button" data-adicionar="{{ produto.id }}" data-nome="{{ produto.nome }}"
+                data-estoque="{{ produto.estoque }}" data-qtd="#quantidade">
+          Adicionar ao carrinho
+        </button>
+      </div>
+      <p class="dica">{{ produto.estoque }} unidade(s) disponíveis hoje.</p>
+    {% else %}
+      <p class="alerta alerta--info">Este sabor esgotou hoje. Volte amanhã!</p>
+    {% endif %}
+
+    <ul class="beneficios">
+      <li>🚚 Entrega em até 1 dia útil na Grande SP — grátis acima de R$ 100,00</li>
+      <li>💳 PIX, cartão de crédito em até 3x ou boleto</li>
+      <li>🧁 Produzidos no dia, sem conservantes</li>
+    </ul>
+  </div>
+</article>
+
+{% if relacionados %}
+<section class="relacionados">
+  <h2>Você também pode gostar</h2>
+  <div class="grade grade--compacta">
+    {% for p in relacionados %}
+      <a class="card card--mini" href="{{ url_for('vitrine.produto', produto_id=p.id) }}">
+        <span class="card__imagem">{{ cupcake(p.cor_cobertura, p.cor_forminha) }}</span>
+        <span class="card__corpo">
+          <span class="card__titulo">{{ p.nome }}</span>
+          <span class="preco">{{ p.preco_centavos|brl }}</span>
+        </span>
+      </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

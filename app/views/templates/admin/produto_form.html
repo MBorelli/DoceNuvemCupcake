@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% from "macros.html" import cupcake, csrf %}
+{% block titulo %}{{ 'Editar' if produto.id else 'Novo' }} cupcake{% endblock %}
+{% block conteudo %}
+<h1>{{ 'Editar' if produto.id else 'Novo' }} cupcake</h1>
+{% include "admin/_abas.html" %}
+
+<form method="post" class="painel produto-form" novalidate>
+  {{ csrf() }}
+  <div class="produto-form__campos formulario">
+    <label class="campo">
+      <span>Nome</span>
+      <input name="nome" value="{{ produto.nome }}" required minlength="3">
+    </label>
+    <label class="campo">
+      <span>Descrição</span>
+      <textarea name="descricao" rows="3">{{ produto.descricao }}</textarea>
+    </label>
+    <div class="linha-campos">
+      <label class="campo">
+        <span>Categoria</span>
+        <input name="categoria" value="{{ produto.categoria }}" list="lista-categorias" required>
+        <datalist id="lista-categorias">{% for c in categorias %}<option value="{{ c }}">{% endfor %}</datalist>
+      </label>
+      <label class="campo">
+        <span>Preço (R$)</span>
+        <input name="preco" value="{{ '%.2f'|format(produto.preco_centavos / 100) if produto.preco_centavos else '' }}" inputmode="decimal" placeholder="12,90" required>
+      </label>
+      <label class="campo">
+        <span>Estoque</span>
+        <input type="number" name="estoque" min="0" value="{{ produto.estoque }}" required>
+      </label>
+    </div>
+    <div class="linha-campos">
+      <label class="campo">
+        <span>Cor da cobertura</span>
+        <input type="color" name="cor_cobertura" value="{{ produto.cor_cobertura }}" data-preview="cobertura">
+      </label>
+      <label class="campo">
+        <span>Cor da forminha</span>
+        <input type="color" name="cor_forminha" value="{{ produto.cor_forminha }}" data-preview="forminha">
+      </label>
+    </div>
+    <label class="checkbox"><input type="checkbox" name="ativo" {% if produto.ativo %}checked{% endif %}> Visível na vitrine</label>
+    <label class="checkbox"><input type="checkbox" name="destaque" {% if produto.destaque %}checked{% endif %}> Destacar como "Mais pedido"</label>
+    <div class="barra-acoes">
+      <button class="botao" type="submit">Salvar</button>
+      <a class="botao botao--secundario" href="{{ url_for('admin.produtos') }}">Cancelar</a>
+    </div>
+  </div>
+  <div class="produto-form__preview" id="preview-cupcake" aria-hidden="true">
+    {{ cupcake(produto.cor_cobertura, produto.cor_forminha, "cupcake--grande") }}
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}
+<script>
+  // Pré-visualização das cores do cupcake em tempo real.
+  document.querySelectorAll("[data-preview]").forEach(function (campo) {
+    campo.addEventListener("input", function () {
+      var form = campo.form;
+      document.getElementById("preview-cupcake").innerHTML =
+        Loja.cupcake(form.cor_cobertura.value, form.cor_forminha.value, "cupcake--grande");
+    });
+  });
+</script>
+{% endblock %}

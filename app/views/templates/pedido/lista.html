@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "macros.html" import selo_status %}
+{% block titulo %}Meus pedidos{% endblock %}
+{% block conteudo %}
+<h1>Meus pedidos</h1>
+{% if pedidos %}
+  <div class="tabela-rolagem">
+    <table class="tabela">
+      <thead>
+        <tr><th>Pedido</th><th>Data</th><th>Pagamento</th><th>Total</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for p in pedidos %}
+          <tr>
+            <td><strong>#{{ p.id }}</strong></td>
+            <td>{{ p.criado_em|data_hora }}</td>
+            <td>{{ MetodoPagamento.ROTULOS.get(p.metodo_pagamento, '—') }}</td>
+            <td>{{ p.total_centavos|brl }}</td>
+            <td>{{ selo_status(p.status) }}</td>
+            <td><a class="botao botao--pequeno botao--secundario" href="{{ url_for('pedido.detalhe', pedido_id=p.id) }}">Acompanhar</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <section class="vazio">
+    <p class="vazio__icone" aria-hidden="true">🧁</p>
+    <p>Você ainda não fez nenhum pedido.</p>
+    <a class="botao" href="{{ url_for('vitrine.index') }}">Ir para a vitrine</a>
+  </section>
+{% endif %}
+{% endblock %}

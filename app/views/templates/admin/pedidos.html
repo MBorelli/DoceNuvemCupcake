@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "macros.html" import selo_status, csrf %}
+{% block titulo %}Painel · Pedidos{% endblock %}
+{% block conteudo %}
+<h1>Painel da loja</h1>
+{% include "admin/_abas.html" %}
+
+<nav class="chips" aria-label="Filtrar por status">
+  <a class="chip {% if not status_atual %}chip--ativo{% endif %}" href="{{ url_for('admin.pedidos') }}">Todos ({{ contagem.values()|sum }})</a>
+  {% for s, rotulo in StatusPedido.ROTULOS.items() %}
+    <a class="chip {% if status_atual == s %}chip--ativo{% endif %}" href="{{ url_for('admin.pedidos', status=s) }}">{{ rotulo }} ({{ contagem.get(s, 0) }})</a>
+  {% endfor %}
+</nav>
+
+{% if pedidos %}
+  <div class="tabela-rolagem">
+    <table class="tabela">
+      <thead>
+        <tr><th>Pedido</th><th>Cliente</th><th>Data</th><th>Pagamento</th><th>Total</th><th>Status</th><th>Avançar</th></tr>
+      </thead>
+      <tbody>
+        {% for p in pedidos %}
+          <tr>
+            <td><a href="{{ url_for('pedido.detalhe', pedido_id=p.id) }}"><strong>#{{ p.id }}</strong></a></td>
+            <td>{{ p.cliente_nome }}</td>
+            <td>{{ p.criado_em|data_hora }}</td>
+            <td>{{ MetodoPagamento.ROTULOS.get(p.metodo_pagamento, '—') }}<br><small>{{ StatusPagamento.ROTULOS.get(p.status_pagamento, '') }}</small></td>
+            <td>{{ p.total_centavos|brl }}</td>
+            <td>{{ selo_status(p.status) }}</td>
+            <td>
+              {% if p.proximos_status %}
+                <form method="post" action="{{ url_for('admin.alterar_status', pedido_id=p.id) }}" class="form-inline">
+                  {{ csrf() }}
+                  <input type="hidden" name="filtro" value="{{ status_atual or '' }}">
+                  <select name="status" aria-label="Novo status do pedido #{{ p.id }}">
+                    {% for s in p.proximos_status %}<option value="{{ s }}">{{ rotulo_status(s) }}</option>{% endfor %}
+                  </select>
+                  <button class="botao botao--pequeno" type="submit">OK</button>
+                </form>
+              {% else %}
+                <small class="dica">Finalizado</small>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p class="vazio vazio--compacto">Nenhum pedido {% if status_atual %}com status "{{ rotulo_status(status_atual) }}"{% endif %}.</p>
+{% endif %}
+{% endblock %}

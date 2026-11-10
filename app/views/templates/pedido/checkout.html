@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% from "macros.html" import csrf %}
+{% block titulo %}Finalizar pedido{% endblock %}
+{% block conteudo %}
+{% set metodo = form.get('metodo_pagamento', 'pix') %}
+<h1>Finalizar pedido</h1>
+
+<form id="form-checkout" class="checkout" method="post" novalidate>
+  {{ csrf() }}
+  <input type="hidden" name="carrinho" id="campo-carrinho">
+
+  <div class="checkout__principal">
+    <fieldset class="painel">
+      <legend><span class="numero-etapa">1</span> Entrega</legend>
+      <div class="linha-campos">
+        <label class="campo">
+          <span>Quem vai receber</span>
+          <input name="destinatario" value="{{ form.get('destinatario', '') }}" required autocomplete="name">
+        </label>
+        <label class="campo">
+          <span>Telefone com DDD</span>
+          <input type="tel" name="telefone" value="{{ form.get('telefone', '') }}" required autocomplete="tel" data-mascara="telefone">
+        </label>
+      </div>
+      <div class="linha-campos linha-campos--cep">
+        <label class="campo">
+          <span>CEP</span>
+          <input name="cep" id="cep" value="{{ form.get('cep', '') }}" required inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" data-mascara="cep">
+        </label>
+        <p class="frete-info" id="frete-info" aria-live="polite">Informe o CEP para calcular frete e prazo.</p>
+      </div>
+      <div class="linha-campos linha-campos--endereco">
+        <label class="campo">
+          <span>Rua / Avenida</span>
+          <input name="logradouro" id="logradouro" value="{{ form.get('logradouro', '') }}" required autocomplete="address-line1">
+        </label>
+        <label class="campo">
+          <span>Número</span>
+          <input name="numero" id="numero" value="{{ form.get('numero', '') }}" required>
+        </label>
+      </div>
+      <div class="linha-campos">
+        <label class="campo">
+          <span>Complemento <small>(opcional)</small></span>
+          <input name="complemento" value="{{ form.get('complemento', '') }}" autocomplete="address-line2">
+        </label>
+        <label class="campo">
+          <span>Bairro</span>
+          <input name="bairro" id="bairro" value="{{ form.get('bairro', '') }}" required>
+        </label>
+      </div>
+      <div class="linha-campos linha-campos--cidade">
+        <label class="campo">
+          <span>Cidade</span>
+          <input name="cidade" id="cidade" value="{{ form.get('cidade', '') }}" required autocomplete="address-level2">
+        </label>
+        <label class="campo">
+          <span>UF</span>
+          <input name="uf" id="uf" value="{{ form.get('uf', '') }}" required maxlength="2" autocomplete="address-level1">
+        </label>
+      </div>
+      <label class="campo">
+        <span>Observações para a entrega <small>(opcional)</small></span>
+        <textarea name="observacoes" rows="2" maxlength="500" placeholder="Ex.: portão azul, deixar na portaria…">{{ form.get('observacoes', '') }}</textarea>
+      </label>
+    </fieldset>
+
+    <fieldset class="painel">
+      <legend><span class="numero-etapa">2</span> Pagamento</legend>
+      <div class="opcoes-pagamento" role="radiogroup">
+        <label class="opcao-pagamento">
+          <input type="radio" name="metodo_pagamento" value="pix" {% if metodo == 'pix' %}checked{% endif %}>
+          <span><strong>PIX</strong><small>Aprovação imediata após o pagamento</small></span>
+        </label>
+        <label class="opcao-pagamento">
+          <input type="radio" name="metodo_pagamento" value="cartao" {% if metodo == 'cartao' %}checked{% endif %}>
+          <span><strong>Cartão de crédito</strong><small>Em até {{ max_parcelas }}x sem juros</small></span>
+        </label>
+        <label class="opcao-pagamento">
+          <input type="radio" name="metodo_pagamento" value="boleto" {% if metodo == 'boleto' %}checked{% endif %}>
+          <span><strong>Boleto</strong><small>Vence em 3 dias; produzimos após a compensação</small></span>
+        </label>
+      </div>
+
+      <div class="painel-pagamento" data-painel-pagamento="cartao" hidden>
+        <label class="campo">
+          <span>Número do cartão <small id="bandeira" class="bandeira"></small></span>
+          <input name="cartao_numero" id="cartao-numero" inputmode="numeric" autocomplete="cc-number" placeholder="0000 0000 0000 0000" maxlength="23">
+        </label>
+        <label class="campo">
+          <span>Nome impresso no cartão</span>
+          <input name="cartao_titular" value="{{ form.get('cartao_titular', '') }}" autocomplete="cc-name">
+        </label>
+        <div class="linha-campos linha-campos--cartao">
+          <label class="campo">
+            <span>Validade</span>
+            <input name="cartao_validade" id="cartao-validade" value="{{ form.get('cartao_validade', '') }}" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/AA" maxlength="5">
+          </label>
+          <label class="campo">
+            <span>CVV</span>
+            <input name="cartao_cvv" inputmode="numeric" autocomplete="cc-csc" placeholder="123" maxlength="4">
+          </label>
+          <label class="campo">
+            <span>Parcelas</span>
+            <select name="cartao_parcelas" id="parcelas" data-max="{{ max_parcelas }}">
+              {% for n in range(1, max_parcelas + 1) %}
+                <option value="{{ n }}" {% if form.get('cartao_parcelas') == n|string %}selected{% endif %}>{{ n }}x</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+        <p class="dica">Ambiente de testes: use <code>4111 1111 1111 1111</code> (aprovado) ou <code>4000 0000 0000 0002</code> (recusado), qualquer validade futura e CVV.</p>
+      </div>
+      <p class="dica" data-painel-pagamento="pix" hidden>O código PIX aparece na próxima tela, junto com o resumo do pedido.</p>
+      <p class="dica" data-painel-pagamento="boleto" hidden>A linha digitável aparece na próxima tela. O preparo começa após a compensação.</p>
+    </fieldset>
+  </div>
+
+  <aside class="painel resumo" aria-labelledby="titulo-resumo">
+    <h2 id="titulo-resumo">Resumo</h2>
+    <div id="resumo-avisos"></div>
+    <ul class="resumo__itens" id="resumo-itens"><li class="carregando">Carregando itens…</li></ul>
+    <dl class="resumo__totais">
+      <div><dt>Subtotal</dt><dd id="resumo-subtotal">—</dd></div>
+      <div><dt>Frete</dt><dd id="resumo-frete">informe o CEP</dd></div>
+      <div class="resumo__total"><dt>Total</dt><dd id="resumo-total">—</dd></div>
+    </dl>
+    <button class="botao botao--largo" type="submit" id="botao-finalizar">Confirmar pedido</button>
+    <a class="link-voltar" href="{{ url_for('carrinho.pagina') }}">← Voltar ao carrinho</a>
+  </aside>
+</form>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/checkout.js') }}"></script>
+{% endblock %}

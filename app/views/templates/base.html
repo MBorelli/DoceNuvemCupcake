@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block titulo %}Vitrine{% endblock %} · {{ config.LOJA_NOME }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body {% block body_attrs %}{% endblock %}>
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="topo">
+    <div class="container topo__barra">
+      <a class="logo" href="{{ url_for('vitrine.index') }}">
+        <span class="logo__icone" aria-hidden="true">🧁</span>
+        <span>{{ config.LOJA_NOME }}</span>
+      </a>
+      <nav class="menu" aria-label="Principal">
+        <a href="{{ url_for('vitrine.index') }}">Vitrine</a>
+        {% if g.cliente %}
+          <a href="{{ url_for('pedido.lista') }}">Meus pedidos</a>
+          {% if g.cliente.is_admin %}
+            <a href="{{ url_for('admin.pedidos') }}">Painel</a>
+          {% endif %}
+          <form action="{{ url_for('auth.logout') }}" method="post" class="menu__sair">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="link">Sair ({{ g.cliente.primeiro_nome }})</button>
+          </form>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}">Entrar</a>
+        {% endif %}
+        <a class="menu__carrinho" href="{{ url_for('carrinho.pagina') }}" aria-label="Carrinho">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM5.2 4l.4 2H21l-2.2 8.1a2 2 0 0 1-1.9 1.4H8.4a2 2 0 0 1-2-1.6L4.2 3.6A1 1 0 0 0 3.2 3H2V1h1.2a3 3 0 0 1 2.9 2.3Z"/></svg>
+          <span class="contador" data-contador-carrinho hidden>0</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="conteudo" class="container conteudo">
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+      {% if mensagens %}
+        <div class="mensagens">
+          {% for categoria, mensagem in mensagens %}
+            <div class="alerta alerta--{{ categoria }}" role="alert">{{ mensagem }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block conteudo %}{% endblock %}
+  </main>
+
+  <footer class="rodape">
+    <div class="container rodape__conteudo">
+      <p><strong>{{ config.LOJA_NOME }}</strong> · Cupcakes artesanais feitos no dia.</p>
+      <p>Entregas de segunda a sábado na Grande São Paulo e interior/litoral de SP.</p>
+      <p class="rodape__nota">Projeto acadêmico — pagamentos simulados, nenhuma cobrança real é feita.</p>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="{{ url_for('static', filename='js/carrinho.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

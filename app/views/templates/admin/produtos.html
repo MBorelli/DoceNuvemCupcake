@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "macros.html" import cupcake %}
+{% block titulo %}Painel · Produtos{% endblock %}
+{% block conteudo %}
+<h1>Painel da loja</h1>
+{% include "admin/_abas.html" %}
+
+<div class="barra-acoes">
+  <a class="botao" href="{{ url_for('admin.produto_form') }}">+ Novo cupcake</a>
+</div>
+
+<div class="tabela-rolagem">
+  <table class="tabela">
+    <thead>
+      <tr><th></th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Estoque</th><th>Situação</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for p in produtos %}
+        <tr class="{% if not p.ativo %}linha--inativa{% endif %}">
+          <td class="tabela__miniatura">{{ cupcake(p.cor_cobertura, p.cor_forminha) }}</td>
+          <td><strong>{{ p.nome }}</strong>{% if p.destaque %} <span class="selo selo--pago">Destaque</span>{% endif %}</td>
+          <td>{{ p.categoria }}</td>
+          <td>{{ p.preco_centavos|brl }}</td>
+          <td>{% if p.estoque == 0 %}<span class="selo selo--esgotado">0</span>{% else %}{{ p.estoque }}{% endif %}</td>
+          <td>{{ 'Ativo' if p.ativo else 'Oculto' }}</td>
+          <td><a class="botao botao--pequeno botao--secundario" href="{{ url_for('admin.produto_form', produto_id=p.id) }}">Editar</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

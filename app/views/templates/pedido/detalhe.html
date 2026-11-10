@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% from "macros.html" import selo_status, csrf %}
+{% block titulo %}Pedido #{{ pedido.id }}{% endblock %}
+{% block body_attrs %}{% if novo %}data-limpar-carrinho{% endif %}{% endblock %}
+{% block conteudo %}
+{% set pagamento = pedido.pagamento %}
+{% set entrega = pedido.entrega %}
+<div class="cabecalho-pedido">
+  <div>
+    <h1>Pedido #{{ pedido.id }}</h1>
+    <p class="dica">Realizado em {{ pedido.criado_em|data_hora }}{% if g.cliente.is_admin and pedido.cliente_id != g.cliente.id %} por {{ pedido.cliente_nome }}{% endif %}</p>
+  </div>
+  {{ selo_status(pedido.status) }}
+</div>
+
+{% if pedido.status == StatusPedido.CANCELADO %}
+  <div class="alerta alerta--erro">Este pedido foi cancelado.{% if pagamento and pagamento.status == StatusPagamento.ESTORNADO %} O valor pago foi estornado.{% endif %}</div>
+{% else %}
+  <ol class="linha-tempo" aria-label="Andamento do pedido">
+    {% for s in StatusPedido.FLUXO %}
+      <li class="linha-tempo__etapa {% if loop.index0 < pedido.etapa_atual %}concluida{% elif loop.index0 == pedido.etapa_atual %}atual{% endif %}"
+          {% if loop.index0 == pedido.etapa_atual %}aria-current="step"{% endif %}>
+        <span class="linha-tempo__marcador">{% if loop.index0 < pedido.etapa_atual %}✓{% else %}{{ loop.index }}{% endif %}</span>
+        <span class="linha-tempo__rotulo">{{ StatusPedido.ROTULOS[s] }}</span>
+      </li>
+    {% endfor %}
+  </ol>
+{% endif %}
+
+<div class="detalhe-grade">
+  <div class="detalhe-grade__principal">
+
+    {% if pagamento and pagamento.pendente and pedido.status == StatusPedido.AGUARDANDO_PAGAMENTO %}
+      <section class="painel painel--destaque">
+        {% if pagamento.metodo == MetodoPagamento.PIX %}
+          <h2>Pague com PIX</h2>
+          <p>Copie o código abaixo e cole no app do seu banco, na opção <em>PIX Copia e Cola</em>. Válido até {{ pagamento.detalhes.expira_em|data_hora }}.</p>
+          <div class="copiar">
+            <input id="codigo-pagamento" readonly value="{{ pagamento.detalhes.copia_e_cola }}" aria-label="Código PIX copia e cola">
+            <button class="botao botao--secundario" type="button" data-copiar="#codigo-pagamento">Copiar</button>
+          </div>
+        {% else %}
+          <h2>Pague o boleto</h2>
+          <p>Vencimento em {{ pagamento.detalhes.vencimento|data_br }}. Os cupcakes são preparados após a compensação.</p>
+          <div class="copiar">
+            <input id="codigo-pagamento" readonly value="{{ pagamento.detalhes.linha_digitavel }}" aria-label="Linha digitável do boleto">
+            <button class="botao botao--secundario" type="button" data-copiar="#codigo-pagamento">Copiar</button>
+          </div>
+        {% endif %}
+        <p class="valor-pagar">Valor: <strong>{{ pagamento.valor_centavos|brl }}</strong></p>
+        <form method="post" action="{{ url_for('pedido.simular_pagamento', pedido_id=pedido.id) }}" class="simulacao">
+          {{ csrf() }}
+          <button class="botao" type="submit">Simular confirmação do banco</button>
+          <small>Ambiente de demonstração: em produção, a confirmação chegaria automaticamente do provedor de pagamento.</small>
+        </form>
+      </section>
+    {% endif %}
+
+    <section class="painel">
+      <h2>Itens</h2>
+      <div class="tabela-rolagem">
+        <table class="tabela tabela--itens">
+          <thead><tr><th>Cupcake</th><th>Qtd.</th><th>Unitário</th><th>Subtotal</th></tr></thead>
+          <tbody>
+            {% for item in pedido.itens %}
+              <tr>
+                <td>{{ item.nome_produto }}</td>
+                <td>{{ item.quantidade }}</td>
+                <td>{{ item.preco_unitario_centavos|brl }}</td>
+                <td>{{ item.subtotal_centavos|brl }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr><td colspan="3">Subtotal</td><td>{{ pedido.subtotal_centavos|brl }}</td></tr>
+            <tr><td colspan="3">Frete</td><td>{% if pedido.frete_centavos %}{{ pedido.frete_centavos|brl }}{% else %}Grátis{% endif %}</td></tr>
+            <tr class="tabela__total"><td colspan="3">Total</td><td>{{ pedido.total_centavos|brl }}</td></tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+
+    <section class="painel">
+      <h2>Histórico</h2>
+      <ul class="historico">
+        {% for h in pedido.historico|reverse %}
+          <li>
+            <span class="historico__data">{{ h.criado_em|data_hora }}</span>
+            <span class="historico__status">{{ rotulo_status(h.status) }}</span>
+            <span class="historico__descricao">{{ h.descricao }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+
+  <aside class="detalhe-grade__lateral">
+    {% if entrega %}
+    <section class="painel">
+      <h2>Entrega</h2>
+      <p><strong>{{ entrega.destinatario }}</strong><br>{{ entrega.telefone|telefone }}</p>
+      <p>{{ entrega.logradouro }}, {{ entrega.numero }}{% if entrega.complemento %} — {{ entrega.complemento }}{% endif %}<br>
+         {{ entrega.bairro }} · {{ entrega.cidade }}/{{ entrega.uf }}<br>
+         CEP {{ entrega.cep_formatado }}</p>
+      <p class="dica">{{ entrega.regiao }}
+        {% if pedido.status not in (StatusPedido.ENTREGUE, StatusPedido.CANCELADO) %}
+          · previsão: <strong>{{ entrega.previsao|data_br }}</strong> (após confirmação do pagamento)
+        {% endif %}
+      </p>
+      {% if entrega.codigo_rastreio %}
+        <p>Código de rastreio: <code>{{ entrega.codigo_rastreio }}</code></p>
+      {% endif %}
+      {% if pedido.observacoes %}<p class="dica">Obs.: {{ pedido.observacoes }}</p>{% endif %}
+    </section>
+    {% endif %}
+
+    {% if pagamento %}
+    <section class="painel">
+      <h2>Pagamento</h2>
+      <p>{{ pagamento.rotulo_metodo }} — <strong>{{ pagamento.rotulo_status }}</strong></p>
+      {% if pagamento.metodo == MetodoPagamento.CARTAO %}
+        <p>{{ pagamento.detalhes.bandeira }} final {{ pagamento.detalhes.final }}<br>
+           {{ pagamento.detalhes.parcelas }}x de {{ pagamento.detalhes.valor_parcela_centavos|brl }}</p>
+      {% endif %}
+      <p class="dica">Transação {{ pagamento.transacao_id }}</p>
+    </section>
+    {% endif %}
+
+    {% if g.cliente.is_admin and pedido.proximos_status %}
+    <section class="painel">
+      <h2>Atualizar status</h2>
+      <form method="post" action="{{ url_for('admin.alterar_status', pedido_id=pedido.id) }}" class="formulario">
+        {{ csrf() }}
+        <input type="hidden" name="voltar_para" value="detalhe">
+        <select name="status" aria-label="Novo status">
+          {% for s in pedido.proximos_status %}<option value="{{ s }}">{{ rotulo_status(s) }}</option>{% endfor %}
+        </select>
+        <input name="descricao" placeholder="Mensagem para o cliente (opcional)" maxlength="200">
+        <button class="botao botao--largo" type="submit">Atualizar</button>
+      </form>
+    </section>
+    {% endif %}
+
+    {% if pedido.cliente_id == g.cliente.id and pedido.pode_ser_cancelado_pelo_cliente %}
+      <form method="post" action="{{ url_for('pedido.cancelar', pedido_id=pedido.id) }}" data-confirmar="Tem certeza que deseja cancelar este pedido?">
+        {{ csrf() }}
+        <button class="botao botao--perigo botao--largo" type="submit">Cancelar pedido</button>
+      </form>
+    {% endif %}
+    <a class="link-voltar" href="{{ url_for('pedido.lista') }}">← Meus pedidos</a>
+  </aside>
+</div>
+{% endblock %}

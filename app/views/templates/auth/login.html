@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "macros.html" import csrf %}
+{% block titulo %}Entrar{% endblock %}
+{% block conteudo %}
+<section class="painel painel--estreito">
+  <h1>Entrar</h1>
+  <form method="post" class="formulario" novalidate>
+    {{ csrf() }}
+    <input type="hidden" name="next" value="{{ proximo }}">
+    <label class="campo">
+      <span>E-mail</span>
+      <input type="email" name="email" value="{{ email }}" required autocomplete="email" autofocus>
+    </label>
+    <label class="campo">
+      <span>Senha</span>
+      <input type="password" name="senha" required autocomplete="current-password">
+    </label>
+    <button class="botao botao--largo" type="submit">Entrar</button>
+  </form>
+  <p class="painel__rodape">Ainda não tem conta? <a href="{{ url_for('auth.cadastro', next=proximo) }}">Cadastre-se</a></p>
+  <details class="dica-demo">
+    <summary>Contas de demonstração</summary>
+    <p>Cliente: <code>cliente@cupcakes.com</code> / <code>cliente123</code><br>
+       Administrador: <code>admin@cupcakes.com</code> / <code>admin123</code></p>
+  </details>
+</section>
+{% endblock %}

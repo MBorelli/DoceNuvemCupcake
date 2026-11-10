@@ -1,0 +1,4 @@
+<nav class="abas" aria-label="Painel administrativo">
+  <a class="aba {% if request.endpoint == 'admin.pedidos' %}aba--ativa{% endif %}" href="{{ url_for('admin.pedidos') }}">Pedidos</a>
+  <a class="aba {% if request.endpoint in ('admin.produtos', 'admin.produto_form') %}aba--ativa{% endif %}" href="{{ url_for('admin.produtos') }}">Produtos</a>
+</nav>

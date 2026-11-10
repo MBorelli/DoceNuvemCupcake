@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "macros.html" import csrf %}
+{% block titulo %}Criar conta{% endblock %}
+{% block conteudo %}
+<section class="painel painel--estreito">
+  <h1>Criar conta</h1>
+  <form method="post" class="formulario" novalidate>
+    {{ csrf() }}
+    <input type="hidden" name="next" value="{{ proximo }}">
+    <label class="campo">
+      <span>Nome completo</span>
+      <input name="nome" value="{{ form.get('nome', '') }}" required autocomplete="name" minlength="3">
+    </label>
+    <label class="campo">
+      <span>E-mail</span>
+      <input type="email" name="email" value="{{ form.get('email', '') }}" required autocomplete="email">
+    </label>
+    <label class="campo">
+      <span>Celular (com DDD)</span>
+      <input type="tel" name="telefone" value="{{ form.get('telefone', '') }}" autocomplete="tel" data-mascara="telefone" placeholder="(11) 98888-7777">
+    </label>
+    <div class="linha-campos">
+      <label class="campo">
+        <span>Senha</span>
+        <input type="password" name="senha" required minlength="6" autocomplete="new-password">
+      </label>
+      <label class="campo">
+        <span>Confirmar senha</span>
+        <input type="password" name="confirmacao" required minlength="6" autocomplete="new-password">
+      </label>
+    </div>
+    <button class="botao botao--largo" type="submit">Criar conta</button>
+  </form>
+  <p class="painel__rodape">Já tem conta? <a href="{{ url_for('auth.login', next=proximo) }}">Entrar</a></p>
+</section>
+{% endblock %}
