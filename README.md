@@ -4,7 +4,8 @@ Sistema web de uma loja virtual de cupcakes. Ele cobre a **vitrine virtual**, o 
 
 - **Front-end:** HTML5 (templates Jinja2), CSS3 e JavaScript puro (sem frameworks)
 - **Back-end:** Python 3 + Flask, organizado no padrão **MVC (Model–View–Controller)**
-- **Banco de dados:** SQLite, criado automaticamente na primeira execução
+- **Banco de dados:** SQLite no desenvolvimento local; PostgreSQL em produção (Vercel + Neon). As tabelas são criadas automaticamente
+- **Hospedagem:** Vercel (veja [Publicação na Vercel](#publicação-na-vercel))
 
 ## Como executar
 
@@ -51,7 +52,30 @@ Pedidos pagos com PIX ou boleto ficam em *Aguardando pagamento*. Na tela do pedi
 python -m unittest -v
 ```
 
-São 28 testes. Eles cobrem as regras de frete, o algoritmo de Luhn, o carrinho, o cadastro e o login, o pedido com PIX, cartão e boleto, o pagamento recusado (o pedido é desfeito por completo), o cancelamento com devolução de estoque, o fluxo de entrega pelo administrador, as permissões de acesso e a proteção CSRF.
+São 35 testes. Eles cobrem as regras de frete, o algoritmo de Luhn, o carrinho, o cadastro e o login, o pedido com PIX, cartão e boleto, o pagamento recusado (o pedido é desfeito por completo), o cancelamento com devolução de estoque, o fluxo de entrega pelo administrador, as permissões de acesso, a proteção CSRF e a tradução de SQL para o PostgreSQL.
+
+---
+
+## Publicação na Vercel
+
+Na Vercel, a aplicação roda como uma *Vercel Function*. O sistema de arquivos é somente leitura e cada instância tem o seu, então **os dados precisam ficar num banco PostgreSQL externo**. Localmente, o sistema continua usando SQLite.
+
+1. **Importe o repositório** em [vercel.com/new](https://vercel.com/new). A Vercel detecta o Flask pelo `pyproject.toml` (`entrypoint = "run:app"`). Não é preciso configurar build nem output.
+2. **Crie o banco:** no projeto, abra **Storage → Create Database → Neon (Postgres)** e conecte-o ao projeto. A integração cria a variável `DATABASE_URL` automaticamente. O plano gratuito é suficiente.
+3. **Defina a chave secreta** em **Settings → Environment Variables**:
+   - `SECRET_KEY` = um valor aleatório e longo. Para gerar um: `python -c "import secrets; print(secrets.token_hex(32))"`
+4. **Faça um novo deploy** (Deployments → Redeploy) para que as variáveis passem a valer.
+
+As tabelas e os dados de demonstração (produtos e contas de teste) são criados sozinhos no primeiro acesso.
+
+| Variável       | Obrigatória | Para que serve |
+|----------------|-------------|----------------|
+| `SECRET_KEY`   | sim (na Vercel) | Assina o cookie de sessão. Sem ela, a aplicação não inicia na Vercel |
+| `DATABASE_URL` | recomendada | URL do PostgreSQL. `POSTGRES_URL` também é aceita |
+
+> **Sem banco configurado**, a aplicação ainda abre, mas usa SQLite em `/tmp`. Pedidos e cadastros somem quando a instância é reciclada e não são compartilhados entre instâncias. Serve só para uma demonstração rápida.
+
+> **Antes de divulgar o link**, troque as senhas das contas de demonstração (`admin@cupcakes.com` / `admin123`). Com elas, qualquer pessoa acessa o painel administrativo.
 
 ---
 
@@ -59,11 +83,16 @@ São 28 testes. Eles cobrem as regras de frete, o algoritmo de Luhn, o carrinho,
 
 ```
 ProjetoIntegrador/
-├── run.py                        # ponto de entrada
+├── run.py                        # ponto de entrada (também usado pela Vercel)
+├── pyproject.toml                # dependências + entrypoint da Vercel
 ├── requirements.txt
+├── public/static/                # ── VIEW: CSS e JS (servidos pela CDN da Vercel)
+│   ├── css/style.css
+│   └── js/carrinho.js            #    carrinho (localStorage), vitrine, máscaras
+│       js/checkout.js            #    frete por CEP, ViaCEP, validação do cartão
 ├── app/
 │   ├── __init__.py               # fábrica da aplicação (create_app)
-│   ├── database.py               # conexão SQLite, esquema e dados iniciais
+│   ├── database.py               # SQLite (local) ou PostgreSQL (produção), esquema e dados iniciais
 │   │
 │   ├── models/                   # ── MODEL: regras de negócio + persistência
 │   │   ├── produto.py            #    cupcakes da vitrine
@@ -84,13 +113,13 @@ ProjetoIntegrador/
 │   │
 │   └── views/                    # ── VIEW: apresentação
 │       ├── helpers.py            #    filtros (R$, datas, telefone)
-│       ├── templates/            #    HTML (Jinja2)
-│       └── static/
-│           ├── css/style.css
-│           └── js/carrinho.js    #    carrinho (localStorage), vitrine, máscaras
-│               js/checkout.js    #    frete por CEP, ViaCEP, validação do cartão
-└── tests/test_loja.py
+│       └── templates/            #    HTML (Jinja2)
+└── tests/
+    ├── test_loja.py
+    └── test_postgres_adaptador.py
 ```
+
+Os arquivos CSS e JS fazem parte da camada View, mas ficam em `public/static/` porque a Vercel só serve arquivos estáticos dessa pasta.
 
 **Fluxo de uma requisição:** o navegador chama uma rota. O **Controller** lê os dados da requisição e aciona o **Model**, onde ficam todas as regras (estoque, frete, pagamento, transições de status). Em seguida, o Controller escolhe a **View** (template) que vai mostrar o resultado. Os controllers não têm SQL, e os templates não têm regra de negócio.
 

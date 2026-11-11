@@ -29,7 +29,8 @@ ENDERECO = {
 class BaseTeste(unittest.TestCase):
     def setUp(self):
         self.fd, self.caminho_db = tempfile.mkstemp(suffix=".sqlite3")
-        self.app = create_app({"TESTING": True, "DATABASE": self.caminho_db, "SECRET_KEY": "teste"})
+        self.app = create_app({"TESTING": True, "DATABASE": self.caminho_db, "DATABASE_URL": None,
+                               "SECRET_KEY": "teste"})
         self.client = self.app.test_client()
 
     def tearDown(self):

@@ -2,9 +2,15 @@
 
 Organização em MVC:
     app/models/       -> Model: regras de negócio e acesso a dados (SQLite)
-    app/views/        -> View: templates Jinja2 (HTML) + arquivos estáticos (CSS/JS)
+    app/views/        -> View: templates Jinja2 (HTML)
+    public/static/    -> View: CSS/JS (fica em public/ porque a Vercel serve
+                         essa pasta direto pela CDN)
     app/controllers/  -> Controller: rotas que recebem a requisição, chamam
                          os models e escolhem a view a ser renderizada
+
+Variáveis de ambiente:
+    SECRET_KEY    chave de assinatura da sessão (obrigatória na Vercel)
+    DATABASE_URL  URL do PostgreSQL (ou POSTGRES_URL); sem ela usa SQLite
 """
 import os
 
@@ -14,23 +20,45 @@ from . import database
 from .controllers import seguranca
 from .views import helpers
 
+RAIZ_PROJETO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+NA_VERCEL = bool(os.environ.get("VERCEL"))
+
 
 def create_app(test_config=None):
     app = Flask(
         __name__,
         instance_relative_config=True,
         template_folder="views/templates",
-        static_folder="views/static",
+        static_folder=os.path.join(RAIZ_PROJETO, "public", "static"),
+        static_url_path="/static",
     )
     app.config.from_mapping(
-        SECRET_KEY=os.environ.get("SECRET_KEY", "dev-troque-esta-chave-em-producao"),
-        DATABASE=os.path.join(app.instance_path, "cupcakes.sqlite3"),
+        SECRET_KEY=os.environ.get("SECRET_KEY"),
+        DATABASE_URL=os.environ.get("DATABASE_URL") or os.environ.get("POSTGRES_URL"),
+        # Na Vercel só /tmp aceita escrita (e é temporário): SQLite lá serve apenas de demonstração.
+        DATABASE=os.path.join("/tmp" if NA_VERCEL else app.instance_path, "cupcakes.sqlite3"),
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_COOKIE_SECURE=NA_VERCEL,
         LOJA_NOME="Doce Nuvem Cupcakes",
     )
     if test_config:
         app.config.update(test_config)
 
-    os.makedirs(app.instance_path, exist_ok=True)
+    if not app.config["SECRET_KEY"]:
+        if NA_VERCEL:
+            raise RuntimeError(
+                "Defina a variável de ambiente SECRET_KEY em Settings > Environment Variables na Vercel."
+            )
+        app.config["SECRET_KEY"] = "dev-chave-local-nao-use-em-producao"
+
+    if NA_VERCEL and not app.config["DATABASE_URL"]:
+        app.logger.warning(
+            "DATABASE_URL não definida: usando SQLite em /tmp. Os dados serão PERDIDOS "
+            "a cada nova instância. Conecte um banco Postgres (ex.: Neon) ao projeto."
+        )
+    if not app.config["DATABASE_URL"]:
+        os.makedirs(os.path.dirname(app.config["DATABASE"]), exist_ok=True)
 
     database.init_app(app)
     helpers.registrar(app)

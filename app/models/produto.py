@@ -76,8 +76,9 @@ class Produto:
             sql.append("AND categoria = ?")
             params.append(categoria)
         if busca:
-            sql.append("AND (nome LIKE ? OR descricao LIKE ?)")
-            termo = f"%{busca}%"
+            # LOWER nos dois lados: busca sem diferenciar maiúsculas (SQLite e Postgres).
+            sql.append("AND (LOWER(nome) LIKE ? OR LOWER(descricao) LIKE ?)")
+            termo = f"%{busca.lower()}%"
             params += [termo, termo]
         sql.append("ORDER BY destaque DESC, (estoque > 0) DESC, nome")
         return [cls._de_linha(l) for l in get_db().execute(" ".join(sql), params)]
@@ -101,7 +102,7 @@ class Produto:
         linhas = get_db().execute(
             "SELECT DISTINCT categoria FROM produtos WHERE ativo = 1 ORDER BY categoria"
         )
-        return [l[0] for l in linhas]
+        return [l["categoria"] for l in linhas]
 
     def salvar(self):
         self.validar()
