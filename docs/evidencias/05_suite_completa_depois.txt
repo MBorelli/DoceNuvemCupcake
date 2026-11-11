@@ -1,0 +1,78 @@
+test_cadastro_e_login (tests.test_loja.TestAutenticacao.test_cadastro_e_login) ... ok
+test_checkout_exige_login (tests.test_loja.TestAutenticacao.test_checkout_exige_login) ... ok
+test_email_duplicado (tests.test_loja.TestAutenticacao.test_email_duplicado) ... ok
+test_post_sem_csrf_e_rejeitado (tests.test_loja.TestAutenticacao.test_post_sem_csrf_e_rejeitado) ... ok
+test_senha_errada (tests.test_loja.TestAutenticacao.test_senha_errada) ... ok
+test_cancelamento_devolve_estoque (tests.test_loja.TestPedidoPagamentoEntrega.test_cancelamento_devolve_estoque) ... ok
+test_carrinho_vazio (tests.test_loja.TestPedidoPagamentoEntrega.test_carrinho_vazio) ... ok
+test_cartao_aprovado_marca_pedido_como_pago (tests.test_loja.TestPedidoPagamentoEntrega.test_cartao_aprovado_marca_pedido_como_pago) ... ok
+test_cartao_invalido (tests.test_loja.TestPedidoPagamentoEntrega.test_cartao_invalido) ... ok
+test_cartao_recusado_nao_cria_pedido_nem_baixa_estoque (tests.test_loja.TestPedidoPagamentoEntrega.test_cartao_recusado_nao_cria_pedido_nem_baixa_estoque) ... ok
+test_cep_fora_da_area_bloqueia_pedido (tests.test_loja.TestPedidoPagamentoEntrega.test_cep_fora_da_area_bloqueia_pedido) ... ok
+test_estoque_insuficiente_bloqueia_pedido (tests.test_loja.TestPedidoPagamentoEntrega.test_estoque_insuficiente_bloqueia_pedido) ... ok
+test_fluxo_completo_de_entrega_pelo_admin (tests.test_loja.TestPedidoPagamentoEntrega.test_fluxo_completo_de_entrega_pelo_admin) ... ok
+test_pedido_pix_baixa_estoque_e_aguarda_pagamento (tests.test_loja.TestPedidoPagamentoEntrega.test_pedido_pix_baixa_estoque_e_aguarda_pagamento) ... ok
+test_admin_cadastra_produto (tests.test_loja.TestPermissoes.test_admin_cadastra_produto) ... ok
+test_cliente_nao_acessa_admin (tests.test_loja.TestPermissoes.test_cliente_nao_acessa_admin) ... ok
+test_cliente_nao_ve_pedido_de_outro (tests.test_loja.TestPermissoes.test_cliente_nao_ve_pedido_de_outro) ... ok
+test_cep_fora_da_area (tests.test_loja.TestRegrasDeNegocio.test_cep_fora_da_area) ... ok
+test_converter_preco (tests.test_loja.TestRegrasDeNegocio.test_converter_preco) ... ok
+test_frete_grande_sp (tests.test_loja.TestRegrasDeNegocio.test_frete_grande_sp) ... ok
+test_frete_gratis_acima_de_100_reais (tests.test_loja.TestRegrasDeNegocio.test_frete_gratis_acima_de_100_reais) ... ok
+test_frete_interior (tests.test_loja.TestRegrasDeNegocio.test_frete_interior) ... ok
+test_luhn (tests.test_loja.TestRegrasDeNegocio.test_luhn) ... ok
+test_api_carrinho_recalcula_preco_e_ajusta_estoque (tests.test_loja.TestVitrineECarrinho.test_api_carrinho_recalcula_preco_e_ajusta_estoque) ... ok
+test_api_frete (tests.test_loja.TestVitrineECarrinho.test_api_frete) ... ok
+test_filtro_por_categoria (tests.test_loja.TestVitrineECarrinho.test_filtro_por_categoria) ... ok
+test_pagina_produto (tests.test_loja.TestVitrineECarrinho.test_pagina_produto) ... ok
+test_vitrine_lista_produtos (tests.test_loja.TestVitrineECarrinho.test_vitrine_lista_produtos) ... ok
+test_executemany (tests.test_postgres_adaptador.TestAdaptadorPostgres.test_executemany) ... ok
+test_insert_devolve_lastrowid (tests.test_postgres_adaptador.TestAdaptadorPostgres.test_insert_devolve_lastrowid) ... ok
+test_placeholders (tests.test_postgres_adaptador.TestAdaptadorPostgres.test_placeholders) ... ok
+test_porcentagem_literal_e_escapada (tests.test_postgres_adaptador.TestAdaptadorPostgres.test_porcentagem_literal_e_escapada) ... ok
+test_schema_convertido (tests.test_postgres_adaptador.TestAdaptadorPostgres.test_schema_convertido) ... ok
+test_sem_parametros_nao_altera_sql (tests.test_postgres_adaptador.TestAdaptadorPostgres.test_sem_parametros_nao_altera_sql) ... ok
+test_update_nao_recebe_returning (tests.test_postgres_adaptador.TestAdaptadorPostgres.test_update_nao_recebe_returning) ... ok
+test_def01_id_gigante_nao_derruba_rotas_publicas (tests.test_qualidade.TestDefeitosLaudo.test_def01_id_gigante_nao_derruba_rotas_publicas) ... ok
+test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro (tests.test_qualidade.TestDefeitosLaudo.test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro) ... ok
+test_def03_horario_registrado_e_o_de_brasilia (tests.test_qualidade.TestDefeitosLaudo.test_def03_horario_registrado_e_o_de_brasilia) ... ok
+test_def04_codigo_pix_segue_o_padrao_br_code (tests.test_qualidade.TestDefeitosLaudo.test_def04_codigo_pix_segue_o_padrao_br_code) ... ok
+test_def05_cancelamento_concorrente_nao_gera_erro_500 (tests.test_qualidade.TestDefeitosLaudo.test_def05_cancelamento_concorrente_nao_gera_erro_500) ... ok
+test_def06_login_nao_volta_para_rota_que_so_aceita_post (tests.test_qualidade.TestDefeitosLaudo.test_def06_login_nao_volta_para_rota_que_so_aceita_post) ... ok
+test_def07_paginas_de_erro_em_portugues (tests.test_qualidade.TestDefeitosLaudo.test_def07_paginas_de_erro_em_portugues) ... [2026-11-11 02:17:04,372] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\vitrine_controller.py", line 13, in index
+    produtos = Produto.listar(categoria=categoria, busca=busca or None)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\unittest\mock.py", line 1134, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\unittest\mock.py", line 1138, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\unittest\mock.py", line 1193, in _execute_mock_call
+    raise effect
+RuntimeError
+ok
+test_def08_cabecalhos_de_seguranca (tests.test_qualidade.TestDefeitosLaudo.test_def08_cabecalhos_de_seguranca) ... ok
+test_def09_curingas_da_busca_sao_literais (tests.test_qualidade.TestDefeitosLaudo.test_def09_curingas_da_busca_sao_literais) ... ok
+test_def10_email_duplicado_em_concorrencia_vira_mensagem (tests.test_qualidade.TestDefeitosLaudo.test_def10_email_duplicado_em_concorrencia_vira_mensagem) ... ok
+test_def11_senha_do_admin_configuravel_por_variavel_de_ambiente (tests.test_qualidade.TestDefeitosLaudo.test_def11_senha_do_admin_configuravel_por_variavel_de_ambiente) ... ok
+test_def12_soma_das_parcelas_igual_ao_total (tests.test_qualidade.TestDefeitosLaudo.test_def12_soma_das_parcelas_igual_ao_total) ... ok
+
+----------------------------------------------------------------------
+Ran 47 tests in 14.111s
+
+OK

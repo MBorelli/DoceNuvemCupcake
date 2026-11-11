@@ -11,10 +11,26 @@ import json
 import re
 import secrets
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import timedelta
 
-from ..database import agora, get_db
+from ..database import agora, agora_local, get_db, hoje
 from .erros import ErroPagamento, ErroValidacao
+
+
+def _campo_emv(identificador: str, valor: str) -> str:
+    """Campo no formato EMV usado pelo BR Code do PIX: ID + tamanho (2 dígitos) + valor."""
+    return f"{identificador}{len(valor):02d}{valor}"
+
+
+def crc16_ccitt(texto: str) -> str:
+    """CRC16-CCITT (polinômio 0x1021, valor inicial 0xFFFF), exigido no campo 63 do BR Code."""
+    crc = 0xFFFF
+    for byte in texto.encode("utf-8"):
+        crc ^= byte << 8
+        for _ in range(8):
+            crc = ((crc << 1) ^ 0x1021) if crc & 0x8000 else (crc << 1)
+            crc &= 0xFFFF
+    return f"{crc:04X}"
 
 
 class MetodoPagamento:
@@ -84,13 +100,22 @@ class GatewayPagamentoSimulado:
     @staticmethod
     def _pix(valor_centavos):
         txid = "PIX" + secrets.token_hex(8).upper()
-        valor = f"{valor_centavos / 100:.2f}"
+        # Cada tamanho é calculado a partir do valor real (antes estavam fixos, e o
+        # código ficava fora do padrão quando o valor não tinha 6 caracteres).
         codigo = (
-            "00020126360014BR.GOV.BCB.PIX0114DOCENUVEM-DEMO"
-            f"5204000053039865406{valor}5802BR5911DOCE NUVEM6009SAO PAULO"
-            f"62{len(txid) + 4:02d}05{len(txid):02d}{txid}6304{secrets.token_hex(2).upper()}"
+            _campo_emv("00", "01")
+            + _campo_emv("26", _campo_emv("00", "BR.GOV.BCB.PIX") + _campo_emv("01", "DOCENUVEM-DEMO"))
+            + _campo_emv("52", "0000")
+            + _campo_emv("53", "986")
+            + _campo_emv("54", f"{valor_centavos / 100:.2f}")
+            + _campo_emv("58", "BR")
+            + _campo_emv("59", "DOCE NUVEM")
+            + _campo_emv("60", "SAO PAULO")
+            + _campo_emv("62", _campo_emv("05", txid))
+            + "6304"
         )
-        expira = datetime.now() + timedelta(minutes=30)
+        codigo += crc16_ccitt(codigo)  # dígito verificador real (antes era aleatório)
+        expira = agora_local() + timedelta(minutes=30)
         return ResultadoPagamento(
             StatusPagamento.PENDENTE, txid,
             {"copia_e_cola": codigo, "expira_em": expira.isoformat(timespec="minutes")},
@@ -101,7 +126,7 @@ class GatewayPagamentoSimulado:
         numeros = "".join(str(secrets.randbelow(10)) for _ in range(47))
         linha = (f"{numeros[0:5]}.{numeros[5:10]} {numeros[10:15]}.{numeros[15:21]} "
                  f"{numeros[21:26]}.{numeros[26:32]} {numeros[32]} {numeros[33:47]}")
-        vencimento = date.today() + timedelta(days=3)
+        vencimento = hoje() + timedelta(days=3)
         return ResultadoPagamento(
             StatusPagamento.PENDENTE, "BOL" + secrets.token_hex(6).upper(),
             {"linha_digitavel": linha, "vencimento": vencimento.isoformat()},
@@ -125,10 +150,10 @@ class GatewayPagamentoSimulado:
         else:
             mes, ano = int(m.group(1)), int(m.group(2))
             ano = ano + 2000 if ano < 100 else ano
-            hoje = date.today()
+            atual = hoje()
             if not 1 <= mes <= 12:
                 erros.append("Mês de validade inválido.")
-            elif (ano, mes) < (hoje.year, hoje.month):
+            elif (ano, mes) < (atual.year, atual.month):
                 erros.append("Cartão vencido.")
         if len(cvv) not in (3, 4):
             erros.append("CVV inválido.")
@@ -151,7 +176,11 @@ class GatewayPagamentoSimulado:
                 "final": numero[-4:],
                 "titular": titular.upper()[:60],
                 "parcelas": parcelas,
-                "valor_parcela_centavos": round(valor_centavos / parcelas),
+                # Parcelas iguais; a diferença de centavos fica na 1ª, para a soma
+                # bater com o total (antes: 3x de R$ 3,33 numa compra de R$ 10,00).
+                "valor_parcela_centavos": valor_centavos // parcelas,
+                "valor_primeira_parcela_centavos":
+                    valor_centavos - (valor_centavos // parcelas) * (parcelas - 1),
             },
         )
 

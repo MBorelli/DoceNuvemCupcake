@@ -7,8 +7,11 @@ Dois bancos são suportados, com a mesma interface para os models:
 Os models escrevem SQL com placeholders "?" e usam cursor.lastrowid, como no
 sqlite3. A classe ConexaoPostgres traduz isso para o psycopg (driver do Postgres).
 """
+import logging
+import os
+import secrets
 import sqlite3
-from datetime import datetime
+from datetime import date, datetime, timedelta, timezone
 
 import click
 from flask import current_app, g
@@ -128,8 +131,42 @@ PRODUTOS_INICIAIS = [
 ]
 
 
+# Horário de Brasília (UTC-3, sem horário de verão desde 2019). Os servidores da
+# Vercel rodam em UTC; sem isso, pedidos feitos após as 21h ficariam com a data
+# do dia seguinte. Offset fixo para não depender da base tzdata (ausente no Windows).
+FUSO_LOJA = timezone(timedelta(hours=-3), "BRT")
+
+# Maior id aceito: limite do INTEGER do PostgreSQL (32 bits). Ids maiores que isso
+# derrubavam a consulta com OverflowError (SQLite) ou "out of range" (Postgres).
+ID_MAXIMO = 2 ** 31 - 1
+
+
+def agora_local() -> datetime:
+    """Data e hora atuais no fuso da loja (sem tzinfo, como o resto do banco)."""
+    return datetime.now(FUSO_LOJA).replace(tzinfo=None)
+
+
 def agora() -> str:
-    return datetime.now().isoformat(timespec="seconds")
+    return agora_local().isoformat(timespec="seconds")
+
+
+def hoje() -> date:
+    return agora_local().date()
+
+
+def id_valido(valor) -> bool:
+    return isinstance(valor, int) and 0 < valor <= ID_MAXIMO
+
+
+def erros_de_integridade() -> tuple:
+    """Exceções de violação de UNIQUE/CHECK nos dois bancos suportados."""
+    erros = [sqlite3.IntegrityError]
+    try:
+        import psycopg
+        erros.append(psycopg.IntegrityError)
+    except ImportError:
+        pass
+    return tuple(erros)
 
 
 # --------------------------------------------------------------- PostgreSQL
@@ -234,6 +271,21 @@ def criar_tabelas(db):
     db.executescript(SCHEMA)
 
 
+def _senha_inicial_admin() -> str:
+    """Senha do admin criado no primeiro acesso. Em produção, defina ADMIN_SENHA;
+    na Vercel, sem ela, é gerada uma senha aleatória (mostrada uma vez no log)
+    para que a senha pública de demonstração nunca dê acesso ao painel."""
+    senha = os.environ.get("ADMIN_SENHA")
+    if senha:
+        return senha
+    if os.environ.get("VERCEL"):
+        senha = secrets.token_urlsafe(12)
+        logging.getLogger(__name__).warning(
+            "ADMIN_SENHA não definida. Senha gerada para admin@cupcakes.com: %s", senha)
+        return senha
+    return "admin123"
+
+
 def popular(db):
     """Insere produtos e usuários de demonstração se o banco estiver vazio."""
     if db.execute("SELECT COUNT(*) AS total FROM produtos").fetchone()["total"] == 0:
@@ -249,7 +301,7 @@ def popular(db):
                VALUES (?, ?, ?, ?, ?, ?)""",
             [
                 ("Administrador da Loja", "admin@cupcakes.com",
-                 generate_password_hash("admin123"), "11999990000", 1, agora()),
+                 generate_password_hash(_senha_inicial_admin()), "11999990000", 1, agora()),
                 ("Cliente Demonstração", "cliente@cupcakes.com",
                  generate_password_hash("cliente123"), "11988887777", 0, agora()),
             ],

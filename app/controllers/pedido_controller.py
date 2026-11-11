@@ -82,8 +82,12 @@ def cancelar(pedido_id):
     pedido = _pedido_do_cliente(pedido_id)
     if not pedido.pode_ser_cancelado_pelo_cliente:
         flash("Este pedido não pode mais ser cancelado (já está em preparo).", "erro")
-    else:
+        return redirect(url_for("pedido.detalhe", pedido_id=pedido.id))
+    try:
         pedido.alterar_status(StatusPedido.CANCELADO, "Pedido cancelado pelo cliente.")
+    except ErroValidacao as erro:  # o status mudou entre abrir a página e clicar
+        flash(str(erro), "erro")
+    else:
         flash("Pedido cancelado. Se o pagamento já tinha sido aprovado, ele será estornado.", "info")
     return redirect(url_for("pedido.detalhe", pedido_id=pedido.id))
 
@@ -99,6 +103,10 @@ def simular_pagamento(pedido_id):
             or pagamento.status != StatusPagamento.PENDENTE):
         flash("Não há pagamento pendente para este pedido.", "erro")
     else:
-        pedido.alterar_status(StatusPedido.PAGO, f"Pagamento via {pagamento.rotulo_metodo} confirmado.")
-        flash("Pagamento confirmado! Já vamos preparar seus cupcakes.", "sucesso")
+        try:
+            pedido.alterar_status(StatusPedido.PAGO, f"Pagamento via {pagamento.rotulo_metodo} confirmado.")
+        except ErroValidacao as erro:
+            flash(str(erro), "erro")
+        else:
+            flash("Pagamento confirmado! Já vamos preparar seus cupcakes.", "sucesso")
     return redirect(url_for("pedido.detalhe", pedido_id=pedido.id))

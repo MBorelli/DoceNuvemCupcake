@@ -35,7 +35,10 @@ def login_obrigatorio(view):
     def envoltorio(*args, **kwargs):
         if g.get("cliente") is None:
             flash("Entre na sua conta para continuar.", "info")
-            return redirect(url_for("auth.login", next=request.full_path.rstrip("?")))
+            # Só volta para páginas GET: redirecionar para uma rota que só aceita POST
+            # (ex.: /pedidos/1/cancelar) terminaria em erro 405 depois do login.
+            proximo = request.full_path.rstrip("?") if request.method == "GET" else None
+            return redirect(url_for("auth.login", next=proximo))
         return view(*args, **kwargs)
     return envoltorio
 
@@ -50,6 +53,16 @@ def admin_obrigatorio(view):
     return envoltorio
 
 
+def cabecalhos_de_seguranca(resposta):
+    """Cabeçalhos HTTP de proteção aplicados a todas as respostas."""
+    resposta.headers.setdefault("X-Content-Type-Options", "nosniff")          # sem MIME sniffing
+    resposta.headers.setdefault("X-Frame-Options", "DENY")                    # anti-clickjacking
+    resposta.headers.setdefault("Content-Security-Policy", "frame-ancestors 'none'")
+    resposta.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    return resposta
+
+
 def registrar(app):
     app.before_request(verificar_csrf)
+    app.after_request(cabecalhos_de_seguranca)
     app.jinja_env.globals["csrf_token"] = gerar_csrf_token

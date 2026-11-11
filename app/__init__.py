@@ -90,4 +90,17 @@ def create_app(test_config=None):
             mensagem="Requisição inválida. Recarregue a página e tente novamente.",
         ), 400
 
+    @app.errorhandler(405)
+    def metodo_nao_permitido(_erro):
+        return render_template(
+            "erro.html", codigo=405, mensagem="Esta ação não pode ser acessada diretamente pelo endereço.",
+        ), 405
+
+    @app.errorhandler(500)
+    def erro_interno(_erro):
+        return render_template(
+            "erro.html", codigo=500,
+            mensagem="Ocorreu um erro inesperado. Tente novamente em instantes.",
+        ), 500
+
     return app

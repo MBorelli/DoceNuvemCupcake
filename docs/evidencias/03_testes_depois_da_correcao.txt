@@ -1,0 +1,43 @@
+test_def01_id_gigante_nao_derruba_rotas_publicas (tests.test_qualidade.TestDefeitosLaudo.test_def01_id_gigante_nao_derruba_rotas_publicas) ... ok
+test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro (tests.test_qualidade.TestDefeitosLaudo.test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro) ... ok
+test_def03_horario_registrado_e_o_de_brasilia (tests.test_qualidade.TestDefeitosLaudo.test_def03_horario_registrado_e_o_de_brasilia) ... ok
+test_def04_codigo_pix_segue_o_padrao_br_code (tests.test_qualidade.TestDefeitosLaudo.test_def04_codigo_pix_segue_o_padrao_br_code) ... ok
+test_def05_cancelamento_concorrente_nao_gera_erro_500 (tests.test_qualidade.TestDefeitosLaudo.test_def05_cancelamento_concorrente_nao_gera_erro_500) ... ok
+test_def06_login_nao_volta_para_rota_que_so_aceita_post (tests.test_qualidade.TestDefeitosLaudo.test_def06_login_nao_volta_para_rota_que_so_aceita_post) ... ok
+test_def07_paginas_de_erro_em_portugues (tests.test_qualidade.TestDefeitosLaudo.test_def07_paginas_de_erro_em_portugues) ... [2026-11-11 02:16:49,965] ERROR in app: Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\vitrine_controller.py", line 13, in index
+    produtos = Produto.listar(categoria=categoria, busca=busca or None)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\unittest\mock.py", line 1134, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\unittest\mock.py", line 1138, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\unittest\mock.py", line 1193, in _execute_mock_call
+    raise effect
+RuntimeError
+ok
+test_def08_cabecalhos_de_seguranca (tests.test_qualidade.TestDefeitosLaudo.test_def08_cabecalhos_de_seguranca) ... ok
+test_def09_curingas_da_busca_sao_literais (tests.test_qualidade.TestDefeitosLaudo.test_def09_curingas_da_busca_sao_literais) ... ok
+test_def10_email_duplicado_em_concorrencia_vira_mensagem (tests.test_qualidade.TestDefeitosLaudo.test_def10_email_duplicado_em_concorrencia_vira_mensagem) ... ok
+test_def11_senha_do_admin_configuravel_por_variavel_de_ambiente (tests.test_qualidade.TestDefeitosLaudo.test_def11_senha_do_admin_configuravel_por_variavel_de_ambiente) ... ok
+test_def12_soma_das_parcelas_igual_ao_total (tests.test_qualidade.TestDefeitosLaudo.test_def12_soma_das_parcelas_igual_ao_total) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 4.309s
+
+OK

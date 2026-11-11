@@ -1,0 +1,37 @@
+Data/hora da coleta (Brasília): 10/11/2026 23:17:21
+Relógio do processo (simulando o servidor): 10/11/2026 23:17:21
+==============================================================================
+[DEF-01] POST /api/carrinho com produto_id=100000000000000000000
+        -> HTTP 200
+[DEF-01] GET /produto/100000000000000000000
+        -> HTTP 404
+[DEF-02] Admin cadastra produto com preco=NaN
+        -> HTTP 200
+[DEF-02] Admin cadastra produto com preco=Infinity
+        -> HTTP 200
+[DEF-02] Admin cadastra produto com estoque=100000000000000000000
+        -> HTTP 200
+[DEF-03] Pedido criado agora - horário gravado no banco
+        -> criado_em = 2026-11-10T23:17:22
+[DEF-04] Código PIX copia-e-cola de R$ 7,90
+        -> 00020126360014BR.GOV.BCB.PIX0114DOCENUVEM-DEMO52040000530398654047.905802BR5910DOCE NUVEM6009SAO PAULO62230519PIX49FAC2F1872A88256304F390
+[DEF-04] Campo 54 (valor) e campo 59 (nome)
+        -> 54 declara 04 caracteres para o valor '7.90'; 59 = '5910DOCE NUVEM'
+[DEF-06] Visitante sem login envia POST /pedidos/1/cancelar
+        -> HTTP 302 Location: /login
+[DEF-07] GET /logout (rota só aceita POST)
+        -> HTTP 405 - título: Erro 405 · Doce Nuvem Cupcakes
+[DEF-08] Cabeçalho X-Content-Type-Options
+        -> nosniff
+[DEF-08] Cabeçalho X-Frame-Options
+        -> DENY
+[DEF-08] Cabeçalho Content-Security-Policy
+        -> frame-ancestors 'none'
+[DEF-08] Cabeçalho Referrer-Policy
+        -> strict-origin-when-cross-origin
+[DEF-09] Busca na vitrine pelo texto '%' (só 'Chocolate 54%' contém o símbolo)
+        -> 1 produto(s) listado(s)
+[DEF-09] Busca na vitrine pelo texto '_' (nenhum produto contém o símbolo)
+        -> 0 produto(s) listado(s)
+[DEF-12] Compra de R$ 10,00 em 3x
+        -> parcelas somam R$ 10.00

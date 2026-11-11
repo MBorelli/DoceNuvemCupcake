@@ -4,7 +4,7 @@ import secrets
 from dataclasses import dataclass
 from datetime import date, timedelta
 
-from ..database import get_db
+from ..database import get_db, hoje
 from .erros import ErroValidacao
 
 # Área de entrega própria da confeitaria (cupcakes são perecíveis, por isso a
@@ -45,7 +45,7 @@ class Frete:
 
     @property
     def previsao(self) -> date:
-        return adicionar_dias_uteis(date.today(), self.prazo_dias)
+        return adicionar_dias_uteis(hoje(), self.prazo_dias)
 
     def to_dict(self):
         return {

@@ -52,7 +52,7 @@ Pedidos pagos com PIX ou boleto ficam em *Aguardando pagamento*. Na tela do pedi
 python -m unittest -v
 ```
 
-São 35 testes. Eles cobrem as regras de frete, o algoritmo de Luhn, o carrinho, o cadastro e o login, o pedido com PIX, cartão e boleto, o pagamento recusado (o pedido é desfeito por completo), o cancelamento com devolução de estoque, o fluxo de entrega pelo administrador, as permissões de acesso, a proteção CSRF e a tradução de SQL para o PostgreSQL.
+São 47 testes. Eles cobrem as regras de frete, o algoritmo de Luhn, o carrinho, o cadastro e o login, o pedido com PIX, cartão e boleto, o pagamento recusado (o pedido é desfeito por completo), o cancelamento com devolução de estoque, o fluxo de entrega pelo administrador, as permissões de acesso, a proteção CSRF e a tradução de SQL para o PostgreSQL. Os 12 testes de `tests/test_qualidade.py` reproduzem os defeitos corrigidos no [laudo de qualidade](docs/LAUDO_QUALIDADE.md).
 
 ---
 
@@ -64,6 +64,7 @@ Na Vercel, a aplicação roda como uma *Vercel Function*. O sistema de arquivos 
 2. **Crie o banco:** no projeto, abra **Storage → Create Database → Neon (Postgres)** e conecte-o ao projeto. A integração cria a variável `DATABASE_URL` automaticamente. O plano gratuito é suficiente.
 3. **Defina a chave secreta** em **Settings → Environment Variables**:
    - `SECRET_KEY` = um valor aleatório e longo. Para gerar um: `python -c "import secrets; print(secrets.token_hex(32))"`
+   - `ADMIN_SENHA` = a senha do administrador (`admin@cupcakes.com`) criado no primeiro acesso
 4. **Faça um novo deploy** (Deployments → Redeploy) para que as variáveis passem a valer.
 
 As tabelas e os dados de demonstração (produtos e contas de teste) são criados sozinhos no primeiro acesso.
@@ -72,10 +73,11 @@ As tabelas e os dados de demonstração (produtos e contas de teste) são criado
 |----------------|-------------|----------------|
 | `SECRET_KEY`   | sim (na Vercel) | Assina o cookie de sessão. Sem ela, a aplicação não inicia na Vercel |
 | `DATABASE_URL` | recomendada | URL do PostgreSQL. `POSTGRES_URL` também é aceita |
+| `ADMIN_SENHA`  | recomendada | Senha do admin criado no primeiro acesso. Sem ela, na Vercel, é gerada uma senha aleatória que aparece uma única vez nos *Runtime Logs* |
 
 > **Sem banco configurado**, a aplicação ainda abre, mas usa SQLite em `/tmp`. Pedidos e cadastros somem quando a instância é reciclada e não são compartilhados entre instâncias. Serve só para uma demonstração rápida.
 
-> **Antes de divulgar o link**, troque as senhas das contas de demonstração (`admin@cupcakes.com` / `admin123`). Com elas, qualquer pessoa acessa o painel administrativo.
+> **Senha do administrador:** na Vercel, a senha pública `admin123` não é mais usada. Defina `ADMIN_SENHA` **antes do primeiro acesso**, porque ela só vale na criação do banco. Se o banco já foi criado com `admin123`, apague as tabelas no painel do Neon e faça um novo deploy. A conta `cliente@cupcakes.com` / `cliente123` continua existindo para demonstração.
 
 ---
 

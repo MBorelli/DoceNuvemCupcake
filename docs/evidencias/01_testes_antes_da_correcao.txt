@@ -1,0 +1,449 @@
+test_def01_id_gigante_nao_derruba_rotas_publicas (tests.test_qualidade.TestDefeitosLaudo.test_def01_id_gigante_nao_derruba_rotas_publicas) ... ERROR
+test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro (tests.test_qualidade.TestDefeitosLaudo.test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro) ... 
+  test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro (tests.test_qualidade.TestDefeitosLaudo.test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro) (campo='preco', valor='NaN') ... ERROR
+  test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro (tests.test_qualidade.TestDefeitosLaudo.test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro) (campo='preco', valor='Infinity') ... ERROR
+  test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro (tests.test_qualidade.TestDefeitosLaudo.test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro) (campo='preco', valor='1e30') ... ERROR
+  test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro (tests.test_qualidade.TestDefeitosLaudo.test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro) (campo='preco', valor='50000,00') ... FAIL
+  test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro (tests.test_qualidade.TestDefeitosLaudo.test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro) (campo='estoque', valor='100000000000000000000') ... ERROR
+test_def03_horario_registrado_e_o_de_brasilia (tests.test_qualidade.TestDefeitosLaudo.test_def03_horario_registrado_e_o_de_brasilia) ... FAIL
+test_def04_codigo_pix_segue_o_padrao_br_code (tests.test_qualidade.TestDefeitosLaudo.test_def04_codigo_pix_segue_o_padrao_br_code) ... ERROR
+test_def05_cancelamento_concorrente_nao_gera_erro_500 (tests.test_qualidade.TestDefeitosLaudo.test_def05_cancelamento_concorrente_nao_gera_erro_500) ... ERROR
+test_def06_login_nao_volta_para_rota_que_so_aceita_post (tests.test_qualidade.TestDefeitosLaudo.test_def06_login_nao_volta_para_rota_que_so_aceita_post) ... FAIL
+test_def07_paginas_de_erro_em_portugues (tests.test_qualidade.TestDefeitosLaudo.test_def07_paginas_de_erro_em_portugues) ... FAIL
+test_def08_cabecalhos_de_seguranca (tests.test_qualidade.TestDefeitosLaudo.test_def08_cabecalhos_de_seguranca) ... FAIL
+test_def09_curingas_da_busca_sao_literais (tests.test_qualidade.TestDefeitosLaudo.test_def09_curingas_da_busca_sao_literais) ... FAIL
+test_def10_email_duplicado_em_concorrencia_vira_mensagem (tests.test_qualidade.TestDefeitosLaudo.test_def10_email_duplicado_em_concorrencia_vira_mensagem) ... ERROR
+test_def11_senha_do_admin_configuravel_por_variavel_de_ambiente (tests.test_qualidade.TestDefeitosLaudo.test_def11_senha_do_admin_configuravel_por_variavel_de_ambiente) ... FAIL
+test_def12_soma_das_parcelas_igual_ao_total (tests.test_qualidade.TestDefeitosLaudo.test_def12_soma_das_parcelas_igual_ao_total) ... ERROR
+
+======================================================================
+ERROR: test_def01_id_gigante_nao_derruba_rotas_publicas (tests.test_qualidade.TestDefeitosLaudo.test_def01_id_gigante_nao_derruba_rotas_publicas)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 55, in test_def01_id_gigante_nao_derruba_rotas_publicas
+    r = self.client.post("/api/carrinho", json={"itens": [{"produto_id": ID_GIGANTE, "quantidade": 1}]},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1167, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\testing.py", line 235, in open
+    response = super().open(
+               ^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1116, in open
+    response_parts = self.run_wsgi_app(request.environ, buffered=buffered)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 988, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1264, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\carrinho_controller.py", line 19, in validar
+    return jsonify(Carrinho.montar(dados.get("itens")).to_dict())
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\models\carrinho.py", line 65, in montar
+    produtos = Produto.buscar_varios(quantidades.keys())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\models\produto.py", line 97, in buscar_varios
+    linhas = get_db().execute(f"SELECT * FROM produtos WHERE id IN ({marcadores})", ids)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OverflowError: Python int too large to convert to SQLite INTEGER
+
+======================================================================
+ERROR: test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro (tests.test_qualidade.TestDefeitosLaudo.test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro) (campo='preco', valor='NaN')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 71, in test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro
+    r = self.post("/admin/produtos/novo", {**base, campo: valor})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_loja.py", line 49, in post
+    return self.client.post(url, data=dados, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1167, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\testing.py", line 235, in open
+    response = super().open(
+               ^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1116, in open
+    response_parts = self.run_wsgi_app(request.environ, buffered=buffered)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 988, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1264, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\seguranca.py", line 39, in envoltorio
+    return view(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\seguranca.py", line 49, in envoltorio
+    return view(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\admin_controller.py", line 83, in produto_form
+    _produto_do_formulario(produto, request.form)
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\admin_controller.py", line 63, in _produto_do_formulario
+    produto.preco_centavos = Produto.converter_preco(form.get("preco"))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\models\produto.py", line 57, in converter_preco
+    return int((valor * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: cannot convert NaN to integer
+
+======================================================================
+ERROR: test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro (tests.test_qualidade.TestDefeitosLaudo.test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro) (campo='preco', valor='Infinity')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 71, in test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro
+    r = self.post("/admin/produtos/novo", {**base, campo: valor})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_loja.py", line 49, in post
+    return self.client.post(url, data=dados, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1167, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\testing.py", line 235, in open
+    response = super().open(
+               ^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1116, in open
+    response_parts = self.run_wsgi_app(request.environ, buffered=buffered)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 988, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1264, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\seguranca.py", line 39, in envoltorio
+    return view(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\seguranca.py", line 49, in envoltorio
+    return view(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\admin_controller.py", line 83, in produto_form
+    _produto_do_formulario(produto, request.form)
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\admin_controller.py", line 63, in _produto_do_formulario
+    produto.preco_centavos = Produto.converter_preco(form.get("preco"))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\models\produto.py", line 57, in converter_preco
+    return int((valor * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+decimal.InvalidOperation: [<class 'decimal.InvalidOperation'>]
+
+======================================================================
+ERROR: test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro (tests.test_qualidade.TestDefeitosLaudo.test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro) (campo='preco', valor='1e30')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 71, in test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro
+    r = self.post("/admin/produtos/novo", {**base, campo: valor})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_loja.py", line 49, in post
+    return self.client.post(url, data=dados, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1167, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\testing.py", line 235, in open
+    response = super().open(
+               ^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1116, in open
+    response_parts = self.run_wsgi_app(request.environ, buffered=buffered)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 988, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1264, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\seguranca.py", line 39, in envoltorio
+    return view(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\seguranca.py", line 49, in envoltorio
+    return view(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\admin_controller.py", line 83, in produto_form
+    _produto_do_formulario(produto, request.form)
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\admin_controller.py", line 63, in _produto_do_formulario
+    produto.preco_centavos = Produto.converter_preco(form.get("preco"))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\models\produto.py", line 57, in converter_preco
+    return int((valor * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+decimal.InvalidOperation: [<class 'decimal.InvalidOperation'>]
+
+======================================================================
+ERROR: test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro (tests.test_qualidade.TestDefeitosLaudo.test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro) (campo='estoque', valor='100000000000000000000')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 71, in test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro
+    r = self.post("/admin/produtos/novo", {**base, campo: valor})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_loja.py", line 49, in post
+    return self.client.post(url, data=dados, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1167, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\testing.py", line 235, in open
+    response = super().open(
+               ^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1116, in open
+    response_parts = self.run_wsgi_app(request.environ, buffered=buffered)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 988, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1264, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\seguranca.py", line 39, in envoltorio
+    return view(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\seguranca.py", line 49, in envoltorio
+    return view(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\admin_controller.py", line 84, in produto_form
+    produto.salvar()
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\models\produto.py", line 116, in salvar
+    cur = db.execute(
+          ^^^^^^^^^^^
+OverflowError: Python int too large to convert to SQLite INTEGER
+
+======================================================================
+ERROR: test_def04_codigo_pix_segue_o_padrao_br_code (tests.test_qualidade.TestDefeitosLaudo.test_def04_codigo_pix_segue_o_padrao_br_code)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 84, in test_def04_codigo_pix_segue_o_padrao_br_code
+    campos = ler_tlv(codigo)  # falha se algum tamanho declarado estiver errado
+             ^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 38, in ler_tlv
+    ident, tamanho = texto[i:i + 2], int(texto[i + 2:i + 4])
+                                     ^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: '9S'
+
+======================================================================
+ERROR: test_def05_cancelamento_concorrente_nao_gera_erro_500 (tests.test_qualidade.TestDefeitosLaudo.test_def05_cancelamento_concorrente_nao_gera_erro_500)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 96, in test_def05_cancelamento_concorrente_nao_gera_erro_500
+    r = self.post(f"/pedidos/{pedido.id}/cancelar")
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_loja.py", line 49, in post
+    return self.client.post(url, data=dados, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1167, in post
+    return self.open(*args, **kw)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\testing.py", line 235, in open
+    response = super().open(
+               ^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1116, in open
+    response_parts = self.run_wsgi_app(request.environ, buffered=buffered)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 988, in run_wsgi_app
+    rv = run_wsgi_app(self.application, environ, buffered=buffered)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\werkzeug\test.py", line 1264, in run_wsgi_app
+    app_rv = app(environ, start_response)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1514, in wsgi_app
+    response = self.handle_exception(e)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 919, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\seguranca.py", line 39, in envoltorio
+    return view(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\controllers\pedido_controller.py", line 86, in cancelar
+    pedido.alterar_status(StatusPedido.CANCELADO, "Pedido cancelado pelo cliente.")
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\models\pedido.py", line 193, in alterar_status
+    raise ErroValidacao("O pedido foi alterado por outra pessoa. Recarregue a página.")
+app.models.erros.ErroValidacao: O pedido foi alterado por outra pessoa. Recarregue a página.
+
+======================================================================
+ERROR: test_def10_email_duplicado_em_concorrencia_vira_mensagem (tests.test_qualidade.TestDefeitosLaudo.test_def10_email_duplicado_em_concorrencia_vira_mensagem)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 154, in test_def10_email_duplicado_em_concorrencia_vira_mensagem
+    Cliente.cadastrar("Outra Pessoa", "cliente@cupcakes.com", "segredo1")
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\app\models\cliente.py", line 66, in cadastrar
+    cur = db.execute(
+          ^^^^^^^^^^^
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 145, in execute
+    return self._db.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: UNIQUE constraint failed: clientes.email
+
+======================================================================
+ERROR: test_def12_soma_das_parcelas_igual_ao_total (tests.test_qualidade.TestDefeitosLaudo.test_def12_soma_das_parcelas_igual_ao_total)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 171, in test_def12_soma_das_parcelas_igual_ao_total
+    soma = d["valor_primeira_parcela_centavos"] + d["valor_parcela_centavos"] * (d["parcelas"] - 1)
+           ~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'valor_primeira_parcela_centavos'
+
+======================================================================
+FAIL: test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro (tests.test_qualidade.TestDefeitosLaudo.test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro) (campo='preco', valor='50000,00')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 72, in test_def02_preco_e_estoque_absurdos_viram_mensagem_de_erro
+    self.assertEqual(r.status_code, 200)
+AssertionError: 302 != 200
+
+======================================================================
+FAIL: test_def03_horario_registrado_e_o_de_brasilia (tests.test_qualidade.TestDefeitosLaudo.test_def03_horario_registrado_e_o_de_brasilia)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 79, in test_def03_horario_registrado_e_o_de_brasilia
+    self.assertLess(abs(registrado - esperado.replace(tzinfo=None)), timedelta(minutes=1))
+AssertionError: datetime.timedelta(seconds=10799, microseconds=424488) not less than datetime.timedelta(seconds=60)
+
+======================================================================
+FAIL: test_def06_login_nao_volta_para_rota_que_so_aceita_post (tests.test_qualidade.TestDefeitosLaudo.test_def06_login_nao_volta_para_rota_que_so_aceita_post)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 103, in test_def06_login_nao_volta_para_rota_que_so_aceita_post
+    self.assertNotIn("cancelar", r.headers["Location"])
+AssertionError: 'cancelar' unexpectedly found in '/login?next=/pedidos/1/cancelar'
+
+======================================================================
+FAIL: test_def07_paginas_de_erro_em_portugues (tests.test_qualidade.TestDefeitosLaudo.test_def07_paginas_de_erro_em_portugues)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 109, in test_def07_paginas_de_erro_em_portugues
+    self.assertIn("Doce Nuvem", r.get_data(as_text=True))
+AssertionError: 'Doce Nuvem' not found in '<!doctype html>\n<html lang=en>\n<title>405 Method Not Allowed</title>\n<h1>Method Not Allowed</h1>\n<p>The method is not allowed for the requested URL.</p>\n'
+
+======================================================================
+FAIL: test_def08_cabecalhos_de_seguranca (tests.test_qualidade.TestDefeitosLaudo.test_def08_cabecalhos_de_seguranca)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 120, in test_def08_cabecalhos_de_seguranca
+    self.assertEqual(h.get("X-Content-Type-Options"), "nosniff")
+AssertionError: None != 'nosniff'
+
+======================================================================
+FAIL: test_def09_curingas_da_busca_sao_literais (tests.test_qualidade.TestDefeitosLaudo.test_def09_curingas_da_busca_sao_literais)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 129, in test_def09_curingas_da_busca_sao_literais
+    self.assertEqual(html.count('<article class="card'), 1, "a busca por '%' virou curinga")
+AssertionError: 10 != 1 : a busca por '%' virou curinga
+
+======================================================================
+FAIL: test_def11_senha_do_admin_configuravel_por_variavel_de_ambiente (tests.test_qualidade.TestDefeitosLaudo.test_def11_senha_do_admin_configuravel_por_variavel_de_ambiente)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\MATHEUS\SERVIDOR\Faculdade e Cursos\Universidade Cruzeiro do Sul\ENGENHARIA DE SOFTWARE\DP\Projeto Integrador Transdisciplinar em Eng. Software 2\ProjetoIntegrador\tests\test_qualidade.py", line 162, in test_def11_senha_do_admin_configuravel_por_variavel_de_ambiente
+    self.assertIn("E-mail ou senha incorretos", self.admin().get_data(as_text=True))
+AssertionError: 'E-mail ou senha incorretos' not found in '<!doctype html>\n<html lang=en>\n<title>Redirecting...</title>\n<h1>Redirecting...</h1>\n<p>You should be redirected automatically to the target URL: <a href="/">/</a>. If not, click the link.\n'
+
+----------------------------------------------------------------------
+Ran 12 tests in 4.066s
+
+FAILED (failures=7, errors=9)

@@ -7,7 +7,7 @@ Fluxo de status:
 from dataclasses import dataclass
 from functools import cached_property
 
-from ..database import agora, get_db
+from ..database import agora, get_db, id_valido
 from .carrinho import Carrinho
 from .entrega import Entrega, calcular_frete
 from .erros import ErroValidacao
@@ -246,6 +246,8 @@ class Pedido:
     # ---------------------------------------------------------------- consultas
     @classmethod
     def buscar_por_id(cls, pedido_id):
+        if not id_valido(pedido_id):
+            return None
         linha = get_db().execute(cls._CONSULTA + " WHERE p.id = ?", (pedido_id,)).fetchone()
         return cls(**dict(linha)) if linha else None
 

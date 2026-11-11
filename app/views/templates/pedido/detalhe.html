@@ -120,7 +120,13 @@
       <p>{{ pagamento.rotulo_metodo }} — <strong>{{ pagamento.rotulo_status }}</strong></p>
       {% if pagamento.metodo == MetodoPagamento.CARTAO %}
         <p>{{ pagamento.detalhes.bandeira }} final {{ pagamento.detalhes.final }}<br>
-           {{ pagamento.detalhes.parcelas }}x de {{ pagamento.detalhes.valor_parcela_centavos|brl }}</p>
+           {% set d = pagamento.detalhes %}
+           {% set primeira = d.get('valor_primeira_parcela_centavos', d.valor_parcela_centavos) %}
+           {% if d.parcelas > 1 and primeira != d.valor_parcela_centavos %}
+             1ª parcela de {{ primeira|brl }} + {{ d.parcelas - 1 }}x de {{ d.valor_parcela_centavos|brl }}
+           {% else %}
+             {{ d.parcelas }}x de {{ d.valor_parcela_centavos|brl }}
+           {% endif %}</p>
       {% endif %}
       <p class="dica">Transação {{ pagamento.transacao_id }}</p>
     </section>

@@ -1,0 +1,37 @@
+Data/hora da coleta (Brasília): 10/11/2026 23:17:42
+Relógio do processo (simulando o servidor): 11/11/2026 02:17:42
+==============================================================================
+[DEF-01] POST /api/carrinho com produto_id=100000000000000000000
+        -> HTTP 500
+[DEF-01] GET /produto/100000000000000000000
+        -> HTTP 500
+[DEF-02] Admin cadastra produto com preco=NaN
+        -> HTTP 500
+[DEF-02] Admin cadastra produto com preco=Infinity
+        -> HTTP 500
+[DEF-02] Admin cadastra produto com estoque=100000000000000000000
+        -> HTTP 500
+[DEF-03] Pedido criado agora - horário gravado no banco
+        -> criado_em = 2026-11-11T02:17:43
+[DEF-04] Código PIX copia-e-cola de R$ 7,90
+        -> 00020126360014BR.GOV.BCB.PIX0114DOCENUVEM-DEMO52040000530398654067.905802BR5911DOCE NUVEM6009SAO PAULO62230519PIXD51FCAA6CE1FBF226304311F
+[DEF-04] Campo 54 (valor) e campo 59 (nome)
+        -> 54 declara 06 caracteres para o valor '7.90'; 59 = '5911DOCE NUVEM'
+[DEF-06] Visitante sem login envia POST /pedidos/1/cancelar
+        -> HTTP 302 Location: /login?next=/pedidos/1/cancelar
+[DEF-07] GET /logout (rota só aceita POST)
+        -> HTTP 405 - título: 405 Method Not Allowed
+[DEF-08] Cabeçalho X-Content-Type-Options
+        -> (ausente)
+[DEF-08] Cabeçalho X-Frame-Options
+        -> (ausente)
+[DEF-08] Cabeçalho Content-Security-Policy
+        -> (ausente)
+[DEF-08] Cabeçalho Referrer-Policy
+        -> (ausente)
+[DEF-09] Busca na vitrine pelo texto '%' (só 'Chocolate 54%' contém o símbolo)
+        -> 10 produto(s) listado(s)
+[DEF-09] Busca na vitrine pelo texto '_' (nenhum produto contém o símbolo)
+        -> 10 produto(s) listado(s)
+[DEF-12] Compra de R$ 10,00 em 3x
+        -> parcelas somam R$ 9.99

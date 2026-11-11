@@ -6,3 +6,4 @@ venv/
 tests/
 *.sqlite3
 .env
+docs/

@@ -6,6 +6,7 @@ recalcula tudo a partir do banco, ajustando quantidades ao estoque disponível.
 """
 from dataclasses import dataclass, field
 
+from ..database import id_valido
 from .produto import Produto
 
 MAX_POR_ITEM = 50
@@ -24,7 +25,7 @@ def normalizar_itens(brutos) -> dict:
             quantidade = int(item.get("quantidade"))
         except (TypeError, ValueError):
             continue
-        if produto_id <= 0 or quantidade <= 0:
+        if not id_valido(produto_id) or quantidade <= 0:
             continue
         quantidades[produto_id] = min(quantidades.get(produto_id, 0) + quantidade, MAX_POR_ITEM)
     return quantidades

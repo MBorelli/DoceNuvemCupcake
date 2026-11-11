@@ -1,0 +1,513 @@
+diff --git a/README.md b/README.md
+index 4de8007..07b5205 100644
+--- a/README.md
++++ b/README.md
+@@ -52,7 +52,7 @@ Pedidos pagos com PIX ou boleto ficam em *Aguardando pagamento*. Na tela do pedi
+ python -m unittest -v
+ ```
+ 
+-São 35 testes. Eles cobrem as regras de frete, o algoritmo de Luhn, o carrinho, o cadastro e o login, o pedido com PIX, cartão e boleto, o pagamento recusado (o pedido é desfeito por completo), o cancelamento com devolução de estoque, o fluxo de entrega pelo administrador, as permissões de acesso, a proteção CSRF e a tradução de SQL para o PostgreSQL.
++São 47 testes. Eles cobrem as regras de frete, o algoritmo de Luhn, o carrinho, o cadastro e o login, o pedido com PIX, cartão e boleto, o pagamento recusado (o pedido é desfeito por completo), o cancelamento com devolução de estoque, o fluxo de entrega pelo administrador, as permissões de acesso, a proteção CSRF e a tradução de SQL para o PostgreSQL. Os 12 testes de `tests/test_qualidade.py` reproduzem os defeitos corrigidos no [laudo de qualidade](docs/LAUDO_QUALIDADE.md).
+ 
+ ---
+ 
+@@ -64,6 +64,7 @@ Na Vercel, a aplicação roda como uma *Vercel Function*. O sistema de arquivos
+ 2. **Crie o banco:** no projeto, abra **Storage → Create Database → Neon (Postgres)** e conecte-o ao projeto. A integração cria a variável `DATABASE_URL` automaticamente. O plano gratuito é suficiente.
+ 3. **Defina a chave secreta** em **Settings → Environment Variables**:
+    - `SECRET_KEY` = um valor aleatório e longo. Para gerar um: `python -c "import secrets; print(secrets.token_hex(32))"`
++   - `ADMIN_SENHA` = a senha do administrador (`admin@cupcakes.com`) criado no primeiro acesso
+ 4. **Faça um novo deploy** (Deployments → Redeploy) para que as variáveis passem a valer.
+ 
+ As tabelas e os dados de demonstração (produtos e contas de teste) são criados sozinhos no primeiro acesso.
+@@ -72,10 +73,11 @@ As tabelas e os dados de demonstração (produtos e contas de teste) são criado
+ |----------------|-------------|----------------|
+ | `SECRET_KEY`   | sim (na Vercel) | Assina o cookie de sessão. Sem ela, a aplicação não inicia na Vercel |
+ | `DATABASE_URL` | recomendada | URL do PostgreSQL. `POSTGRES_URL` também é aceita |
++| `ADMIN_SENHA`  | recomendada | Senha do admin criado no primeiro acesso. Sem ela, na Vercel, é gerada uma senha aleatória que aparece uma única vez nos *Runtime Logs* |
+ 
+ > **Sem banco configurado**, a aplicação ainda abre, mas usa SQLite em `/tmp`. Pedidos e cadastros somem quando a instância é reciclada e não são compartilhados entre instâncias. Serve só para uma demonstração rápida.
+ 
+-> **Antes de divulgar o link**, troque as senhas das contas de demonstração (`admin@cupcakes.com` / `admin123`). Com elas, qualquer pessoa acessa o painel administrativo.
++> **Senha do administrador:** na Vercel, a senha pública `admin123` não é mais usada. Defina `ADMIN_SENHA` **antes do primeiro acesso**, porque ela só vale na criação do banco. Se o banco já foi criado com `admin123`, apague as tabelas no painel do Neon e faça um novo deploy. A conta `cliente@cupcakes.com` / `cliente123` continua existindo para demonstração.
+ 
+ ---
+ 
+diff --git a/app/__init__.py b/app/__init__.py
+index 634f667..c8060c9 100644
+--- a/app/__init__.py
++++ b/app/__init__.py
+@@ -90,4 +90,17 @@ def create_app(test_config=None):
+             mensagem="Requisição inválida. Recarregue a página e tente novamente.",
+         ), 400
+ 
++    @app.errorhandler(405)
++    def metodo_nao_permitido(_erro):
++        return render_template(
++            "erro.html", codigo=405, mensagem="Esta ação não pode ser acessada diretamente pelo endereço.",
++        ), 405
++
++    @app.errorhandler(500)
++    def erro_interno(_erro):
++        return render_template(
++            "erro.html", codigo=500,
++            mensagem="Ocorreu um erro inesperado. Tente novamente em instantes.",
++        ), 500
++
+     return app
+diff --git a/app/controllers/pedido_controller.py b/app/controllers/pedido_controller.py
+index 467e417..e6f1700 100644
+--- a/app/controllers/pedido_controller.py
++++ b/app/controllers/pedido_controller.py
+@@ -82,8 +82,12 @@ def cancelar(pedido_id):
+     pedido = _pedido_do_cliente(pedido_id)
+     if not pedido.pode_ser_cancelado_pelo_cliente:
+         flash("Este pedido não pode mais ser cancelado (já está em preparo).", "erro")
+-    else:
++        return redirect(url_for("pedido.detalhe", pedido_id=pedido.id))
++    try:
+         pedido.alterar_status(StatusPedido.CANCELADO, "Pedido cancelado pelo cliente.")
++    except ErroValidacao as erro:  # o status mudou entre abrir a página e clicar
++        flash(str(erro), "erro")
++    else:
+         flash("Pedido cancelado. Se o pagamento já tinha sido aprovado, ele será estornado.", "info")
+     return redirect(url_for("pedido.detalhe", pedido_id=pedido.id))
+ 
+@@ -99,6 +103,10 @@ def simular_pagamento(pedido_id):
+             or pagamento.status != StatusPagamento.PENDENTE):
+         flash("Não há pagamento pendente para este pedido.", "erro")
+     else:
+-        pedido.alterar_status(StatusPedido.PAGO, f"Pagamento via {pagamento.rotulo_metodo} confirmado.")
+-        flash("Pagamento confirmado! Já vamos preparar seus cupcakes.", "sucesso")
++        try:
++            pedido.alterar_status(StatusPedido.PAGO, f"Pagamento via {pagamento.rotulo_metodo} confirmado.")
++        except ErroValidacao as erro:
++            flash(str(erro), "erro")
++        else:
++            flash("Pagamento confirmado! Já vamos preparar seus cupcakes.", "sucesso")
+     return redirect(url_for("pedido.detalhe", pedido_id=pedido.id))
+diff --git a/app/controllers/seguranca.py b/app/controllers/seguranca.py
+index c5c5657..d75b48e 100644
+--- a/app/controllers/seguranca.py
++++ b/app/controllers/seguranca.py
+@@ -35,7 +35,10 @@ def login_obrigatorio(view):
+     def envoltorio(*args, **kwargs):
+         if g.get("cliente") is None:
+             flash("Entre na sua conta para continuar.", "info")
+-            return redirect(url_for("auth.login", next=request.full_path.rstrip("?")))
++            # Só volta para páginas GET: redirecionar para uma rota que só aceita POST
++            # (ex.: /pedidos/1/cancelar) terminaria em erro 405 depois do login.
++            proximo = request.full_path.rstrip("?") if request.method == "GET" else None
++            return redirect(url_for("auth.login", next=proximo))
+         return view(*args, **kwargs)
+     return envoltorio
+ 
+@@ -50,6 +53,16 @@ def admin_obrigatorio(view):
+     return envoltorio
+ 
+ 
++def cabecalhos_de_seguranca(resposta):
++    """Cabeçalhos HTTP de proteção aplicados a todas as respostas."""
++    resposta.headers.setdefault("X-Content-Type-Options", "nosniff")          # sem MIME sniffing
++    resposta.headers.setdefault("X-Frame-Options", "DENY")                    # anti-clickjacking
++    resposta.headers.setdefault("Content-Security-Policy", "frame-ancestors 'none'")
++    resposta.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
++    return resposta
++
++
+ def registrar(app):
+     app.before_request(verificar_csrf)
++    app.after_request(cabecalhos_de_seguranca)
+     app.jinja_env.globals["csrf_token"] = gerar_csrf_token
+diff --git a/app/database.py b/app/database.py
+index e83bdfd..7ceee6c 100644
+--- a/app/database.py
++++ b/app/database.py
+@@ -7,8 +7,11 @@ Dois bancos são suportados, com a mesma interface para os models:
+ Os models escrevem SQL com placeholders "?" e usam cursor.lastrowid, como no
+ sqlite3. A classe ConexaoPostgres traduz isso para o psycopg (driver do Postgres).
+ """
++import logging
++import os
++import secrets
+ import sqlite3
+-from datetime import datetime
++from datetime import date, datetime, timedelta, timezone
+ 
+ import click
+ from flask import current_app, g
+@@ -128,8 +131,42 @@ PRODUTOS_INICIAIS = [
+ ]
+ 
+ 
++# Horário de Brasília (UTC-3, sem horário de verão desde 2019). Os servidores da
++# Vercel rodam em UTC; sem isso, pedidos feitos após as 21h ficariam com a data
++# do dia seguinte. Offset fixo para não depender da base tzdata (ausente no Windows).
++FUSO_LOJA = timezone(timedelta(hours=-3), "BRT")
++
++# Maior id aceito: limite do INTEGER do PostgreSQL (32 bits). Ids maiores que isso
++# derrubavam a consulta com OverflowError (SQLite) ou "out of range" (Postgres).
++ID_MAXIMO = 2 ** 31 - 1
++
++
++def agora_local() -> datetime:
++    """Data e hora atuais no fuso da loja (sem tzinfo, como o resto do banco)."""
++    return datetime.now(FUSO_LOJA).replace(tzinfo=None)
++
++
+ def agora() -> str:
+-    return datetime.now().isoformat(timespec="seconds")
++    return agora_local().isoformat(timespec="seconds")
++
++
++def hoje() -> date:
++    return agora_local().date()
++
++
++def id_valido(valor) -> bool:
++    return isinstance(valor, int) and 0 < valor <= ID_MAXIMO
++
++
++def erros_de_integridade() -> tuple:
++    """Exceções de violação de UNIQUE/CHECK nos dois bancos suportados."""
++    erros = [sqlite3.IntegrityError]
++    try:
++        import psycopg
++        erros.append(psycopg.IntegrityError)
++    except ImportError:
++        pass
++    return tuple(erros)
+ 
+ 
+ # --------------------------------------------------------------- PostgreSQL
+@@ -234,6 +271,21 @@ def criar_tabelas(db):
+     db.executescript(SCHEMA)
+ 
+ 
++def _senha_inicial_admin() -> str:
++    """Senha do admin criado no primeiro acesso. Em produção, defina ADMIN_SENHA;
++    na Vercel, sem ela, é gerada uma senha aleatória (mostrada uma vez no log)
++    para que a senha pública de demonstração nunca dê acesso ao painel."""
++    senha = os.environ.get("ADMIN_SENHA")
++    if senha:
++        return senha
++    if os.environ.get("VERCEL"):
++        senha = secrets.token_urlsafe(12)
++        logging.getLogger(__name__).warning(
++            "ADMIN_SENHA não definida. Senha gerada para admin@cupcakes.com: %s", senha)
++        return senha
++    return "admin123"
++
++
+ def popular(db):
+     """Insere produtos e usuários de demonstração se o banco estiver vazio."""
+     if db.execute("SELECT COUNT(*) AS total FROM produtos").fetchone()["total"] == 0:
+@@ -249,7 +301,7 @@ def popular(db):
+                VALUES (?, ?, ?, ?, ?, ?)""",
+             [
+                 ("Administrador da Loja", "admin@cupcakes.com",
+-                 generate_password_hash("admin123"), "11999990000", 1, agora()),
++                 generate_password_hash(_senha_inicial_admin()), "11999990000", 1, agora()),
+                 ("Cliente Demonstração", "cliente@cupcakes.com",
+                  generate_password_hash("cliente123"), "11988887777", 0, agora()),
+             ],
+diff --git a/app/models/carrinho.py b/app/models/carrinho.py
+index c418520..12ca41f 100644
+--- a/app/models/carrinho.py
++++ b/app/models/carrinho.py
+@@ -6,6 +6,7 @@ recalcula tudo a partir do banco, ajustando quantidades ao estoque disponível.
+ """
+ from dataclasses import dataclass, field
+ 
++from ..database import id_valido
+ from .produto import Produto
+ 
+ MAX_POR_ITEM = 50
+@@ -24,7 +25,7 @@ def normalizar_itens(brutos) -> dict:
+             quantidade = int(item.get("quantidade"))
+         except (TypeError, ValueError):
+             continue
+-        if produto_id <= 0 or quantidade <= 0:
++        if not id_valido(produto_id) or quantidade <= 0:
+             continue
+         quantidades[produto_id] = min(quantidades.get(produto_id, 0) + quantidade, MAX_POR_ITEM)
+     return quantidades
+diff --git a/app/models/cliente.py b/app/models/cliente.py
+index d0806bb..35249a1 100644
+--- a/app/models/cliente.py
++++ b/app/models/cliente.py
+@@ -4,7 +4,7 @@ from dataclasses import dataclass
+ 
+ from werkzeug.security import check_password_hash, generate_password_hash
+ 
+-from ..database import agora, get_db
++from ..database import agora, erros_de_integridade, get_db, id_valido
+ from .erros import ErroValidacao
+ 
+ EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+@@ -35,6 +35,8 @@ class Cliente:
+ 
+     @classmethod
+     def buscar_por_id(cls, cliente_id):
++        if not id_valido(cliente_id):
++            return None
+         linha = get_db().execute("SELECT * FROM clientes WHERE id = ?", (cliente_id,)).fetchone()
+         return cls._de_linha(linha)
+ 
+@@ -63,12 +65,18 @@ class Cliente:
+         if erros:
+             raise ErroValidacao(erros)
+ 
+-        cur = db.execute(
+-            """INSERT INTO clientes (nome, email, senha_hash, telefone, is_admin, criado_em)
+-               VALUES (?, ?, ?, ?, 0, ?)""",
+-            (nome, email, generate_password_hash(senha), telefone or None, agora()),
+-        )
+-        db.commit()
++        try:
++            cur = db.execute(
++                """INSERT INTO clientes (nome, email, senha_hash, telefone, is_admin, criado_em)
++                   VALUES (?, ?, ?, ?, 0, ?)""",
++                (nome, email, generate_password_hash(senha), telefone or None, agora()),
++            )
++            db.commit()
++        except erros_de_integridade():
++            # Dois cadastros com o mesmo e-mail ao mesmo tempo: a checagem acima passou
++            # para os dois, mas o UNIQUE do banco barra o segundo.
++            db.rollback()
++            raise ErroValidacao("Já existe uma conta com este e-mail.") from None
+         return cls.buscar_por_id(cur.lastrowid)
+ 
+     @classmethod
+diff --git a/app/models/entrega.py b/app/models/entrega.py
+index 5a28b90..8952e44 100644
+--- a/app/models/entrega.py
++++ b/app/models/entrega.py
+@@ -4,7 +4,7 @@ import secrets
+ from dataclasses import dataclass
+ from datetime import date, timedelta
+ 
+-from ..database import get_db
++from ..database import get_db, hoje
+ from .erros import ErroValidacao
+ 
+ # Área de entrega própria da confeitaria (cupcakes são perecíveis, por isso a
+@@ -45,7 +45,7 @@ class Frete:
+ 
+     @property
+     def previsao(self) -> date:
+-        return adicionar_dias_uteis(date.today(), self.prazo_dias)
++        return adicionar_dias_uteis(hoje(), self.prazo_dias)
+ 
+     def to_dict(self):
+         return {
+diff --git a/app/models/pagamento.py b/app/models/pagamento.py
+index 0352750..fea9c5d 100644
+--- a/app/models/pagamento.py
++++ b/app/models/pagamento.py
+@@ -11,12 +11,28 @@ import json
+ import re
+ import secrets
+ from dataclasses import dataclass
+-from datetime import date, datetime, timedelta
++from datetime import timedelta
+ 
+-from ..database import agora, get_db
++from ..database import agora, agora_local, get_db, hoje
+ from .erros import ErroPagamento, ErroValidacao
+ 
+ 
++def _campo_emv(identificador: str, valor: str) -> str:
++    """Campo no formato EMV usado pelo BR Code do PIX: ID + tamanho (2 dígitos) + valor."""
++    return f"{identificador}{len(valor):02d}{valor}"
++
++
++def crc16_ccitt(texto: str) -> str:
++    """CRC16-CCITT (polinômio 0x1021, valor inicial 0xFFFF), exigido no campo 63 do BR Code."""
++    crc = 0xFFFF
++    for byte in texto.encode("utf-8"):
++        crc ^= byte << 8
++        for _ in range(8):
++            crc = ((crc << 1) ^ 0x1021) if crc & 0x8000 else (crc << 1)
++            crc &= 0xFFFF
++    return f"{crc:04X}"
++
++
+ class MetodoPagamento:
+     PIX = "pix"
+     CARTAO = "cartao"
+@@ -84,13 +100,22 @@ class GatewayPagamentoSimulado:
+     @staticmethod
+     def _pix(valor_centavos):
+         txid = "PIX" + secrets.token_hex(8).upper()
+-        valor = f"{valor_centavos / 100:.2f}"
++        # Cada tamanho é calculado a partir do valor real (antes estavam fixos, e o
++        # código ficava fora do padrão quando o valor não tinha 6 caracteres).
+         codigo = (
+-            "00020126360014BR.GOV.BCB.PIX0114DOCENUVEM-DEMO"
+-            f"5204000053039865406{valor}5802BR5911DOCE NUVEM6009SAO PAULO"
+-            f"62{len(txid) + 4:02d}05{len(txid):02d}{txid}6304{secrets.token_hex(2).upper()}"
++            _campo_emv("00", "01")
++            + _campo_emv("26", _campo_emv("00", "BR.GOV.BCB.PIX") + _campo_emv("01", "DOCENUVEM-DEMO"))
++            + _campo_emv("52", "0000")
++            + _campo_emv("53", "986")
++            + _campo_emv("54", f"{valor_centavos / 100:.2f}")
++            + _campo_emv("58", "BR")
++            + _campo_emv("59", "DOCE NUVEM")
++            + _campo_emv("60", "SAO PAULO")
++            + _campo_emv("62", _campo_emv("05", txid))
++            + "6304"
+         )
+-        expira = datetime.now() + timedelta(minutes=30)
++        codigo += crc16_ccitt(codigo)  # dígito verificador real (antes era aleatório)
++        expira = agora_local() + timedelta(minutes=30)
+         return ResultadoPagamento(
+             StatusPagamento.PENDENTE, txid,
+             {"copia_e_cola": codigo, "expira_em": expira.isoformat(timespec="minutes")},
+@@ -101,7 +126,7 @@ class GatewayPagamentoSimulado:
+         numeros = "".join(str(secrets.randbelow(10)) for _ in range(47))
+         linha = (f"{numeros[0:5]}.{numeros[5:10]} {numeros[10:15]}.{numeros[15:21]} "
+                  f"{numeros[21:26]}.{numeros[26:32]} {numeros[32]} {numeros[33:47]}")
+-        vencimento = date.today() + timedelta(days=3)
++        vencimento = hoje() + timedelta(days=3)
+         return ResultadoPagamento(
+             StatusPagamento.PENDENTE, "BOL" + secrets.token_hex(6).upper(),
+             {"linha_digitavel": linha, "vencimento": vencimento.isoformat()},
+@@ -125,10 +150,10 @@ class GatewayPagamentoSimulado:
+         else:
+             mes, ano = int(m.group(1)), int(m.group(2))
+             ano = ano + 2000 if ano < 100 else ano
+-            hoje = date.today()
++            atual = hoje()
+             if not 1 <= mes <= 12:
+                 erros.append("Mês de validade inválido.")
+-            elif (ano, mes) < (hoje.year, hoje.month):
++            elif (ano, mes) < (atual.year, atual.month):
+                 erros.append("Cartão vencido.")
+         if len(cvv) not in (3, 4):
+             erros.append("CVV inválido.")
+@@ -151,7 +176,11 @@ class GatewayPagamentoSimulado:
+                 "final": numero[-4:],
+                 "titular": titular.upper()[:60],
+                 "parcelas": parcelas,
+-                "valor_parcela_centavos": round(valor_centavos / parcelas),
++                # Parcelas iguais; a diferença de centavos fica na 1ª, para a soma
++                # bater com o total (antes: 3x de R$ 3,33 numa compra de R$ 10,00).
++                "valor_parcela_centavos": valor_centavos // parcelas,
++                "valor_primeira_parcela_centavos":
++                    valor_centavos - (valor_centavos // parcelas) * (parcelas - 1),
+             },
+         )
+ 
+diff --git a/app/models/pedido.py b/app/models/pedido.py
+index d98ebe8..be75f2a 100644
+--- a/app/models/pedido.py
++++ b/app/models/pedido.py
+@@ -7,7 +7,7 @@ Fluxo de status:
+ from dataclasses import dataclass
+ from functools import cached_property
+ 
+-from ..database import agora, get_db
++from ..database import agora, get_db, id_valido
+ from .carrinho import Carrinho
+ from .entrega import Entrega, calcular_frete
+ from .erros import ErroValidacao
+@@ -246,6 +246,8 @@ class Pedido:
+     # ---------------------------------------------------------------- consultas
+     @classmethod
+     def buscar_por_id(cls, pedido_id):
++        if not id_valido(pedido_id):
++            return None
+         linha = get_db().execute(cls._CONSULTA + " WHERE p.id = ?", (pedido_id,)).fetchone()
+         return cls(**dict(linha)) if linha else None
+ 
+diff --git a/app/models/produto.py b/app/models/produto.py
+index 603680b..b2651d9 100644
+--- a/app/models/produto.py
++++ b/app/models/produto.py
+@@ -3,10 +3,12 @@ import re
+ from dataclasses import asdict, dataclass
+ from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
+ 
+-from ..database import get_db
++from ..database import get_db, id_valido
+ from .erros import ErroValidacao
+ 
+ COR_HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
++PRECO_MAXIMO_CENTAVOS = 1_000_000   # R$ 10.000,00
++ESTOQUE_MAXIMO = 100_000
+ 
+ 
+ @dataclass
+@@ -33,10 +35,14 @@ class Produto:
+             erros.append("O nome do produto deve ter pelo menos 3 caracteres.")
+         if not isinstance(self.preco_centavos, int) or self.preco_centavos <= 0:
+             erros.append("O preço deve ser maior que zero.")
++        elif self.preco_centavos > PRECO_MAXIMO_CENTAVOS:
++            erros.append("O preço máximo é R$ 10.000,00.")
+         if not (self.categoria or "").strip():
+             erros.append("Informe a categoria.")
+         if not isinstance(self.estoque, int) or self.estoque < 0:
+             erros.append("O estoque não pode ser negativo.")
++        elif self.estoque > ESTOQUE_MAXIMO:
++            erros.append(f"O estoque máximo é {ESTOQUE_MAXIMO:,} unidades.".replace(",", "."))
+         if not COR_HEX.match(self.cor_cobertura or ""):
+             erros.append("Cor da cobertura inválida.")
+         if not COR_HEX.match(self.cor_forminha or ""):
+@@ -54,6 +60,9 @@ class Produto:
+             valor = Decimal(t)
+         except InvalidOperation:
+             raise ErroValidacao("Preço inválido. Use o formato 12,90.") from None
++        # Decimal aceita "NaN" e "Infinity", que quebravam a conversão para int.
++        if not valor.is_finite() or valor * 100 > PRECO_MAXIMO_CENTAVOS:
++            raise ErroValidacao("Preço inválido. Use o formato 12,90 (máximo R$ 10.000,00).")
+         return int((valor * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+ 
+     # ------------------------------------------------------------ persistência
+@@ -77,20 +86,25 @@ class Produto:
+             params.append(categoria)
+         if busca:
+             # LOWER nos dois lados: busca sem diferenciar maiúsculas (SQLite e Postgres).
+-            sql.append("AND (LOWER(nome) LIKE ? OR LOWER(descricao) LIKE ?)")
+-            termo = f"%{busca.lower()}%"
++            # ESCAPE: "%" e "_" digitados pelo cliente são texto, não curingas do LIKE.
++            # "!" é o caractere de escape (igual no SQLite e no PostgreSQL).
++            sql.append("AND (LOWER(nome) LIKE ? ESCAPE '!' OR LOWER(descricao) LIKE ? ESCAPE '!')")
++            literal = busca.lower().replace("!", "!!").replace("%", "!%").replace("_", "!_")
++            termo = f"%{literal}%"
+             params += [termo, termo]
+         sql.append("ORDER BY destaque DESC, (estoque > 0) DESC, nome")
+         return [cls._de_linha(l) for l in get_db().execute(" ".join(sql), params)]
+ 
+     @classmethod
+     def buscar_por_id(cls, produto_id):
++        if not id_valido(produto_id):
++            return None
+         linha = get_db().execute("SELECT * FROM produtos WHERE id = ?", (produto_id,)).fetchone()
+         return cls._de_linha(linha)
+ 
+     @classmethod
+     def buscar_varios(cls, ids) -> dict:
+-        ids = list(ids)
++        ids = [i for i in ids if id_valido(i)]
+         if not ids:
+             return {}
+         marcadores = ",".join("?" * len(ids))
+diff --git a/app/views/templates/pedido/detalhe.html b/app/views/templates/pedido/detalhe.html
+index 6b09044..5e4bc60 100644
+--- a/app/views/templates/pedido/detalhe.html
++++ b/app/views/templates/pedido/detalhe.html
+@@ -120,7 +120,13 @@
+       <p>{{ pagamento.rotulo_metodo }} — <strong>{{ pagamento.rotulo_status }}</strong></p>
+       {% if pagamento.metodo == MetodoPagamento.CARTAO %}
+         <p>{{ pagamento.detalhes.bandeira }} final {{ pagamento.detalhes.final }}<br>
+-           {{ pagamento.detalhes.parcelas }}x de {{ pagamento.detalhes.valor_parcela_centavos|brl }}</p>
++           {% set d = pagamento.detalhes %}
++           {% set primeira = d.get('valor_primeira_parcela_centavos', d.valor_parcela_centavos) %}
++           {% if d.parcelas > 1 and primeira != d.valor_parcela_centavos %}
++             1ª parcela de {{ primeira|brl }} + {{ d.parcelas - 1 }}x de {{ d.valor_parcela_centavos|brl }}
++           {% else %}
++             {{ d.parcelas }}x de {{ d.valor_parcela_centavos|brl }}
++           {% endif %}</p>
+       {% endif %}
+       <p class="dica">Transação {{ pagamento.transacao_id }}</p>
+     </section>

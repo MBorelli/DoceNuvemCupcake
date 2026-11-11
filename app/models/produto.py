@@ -3,10 +3,12 @@ import re
 from dataclasses import asdict, dataclass
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
-from ..database import get_db
+from ..database import get_db, id_valido
 from .erros import ErroValidacao
 
 COR_HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
+PRECO_MAXIMO_CENTAVOS = 1_000_000   # R$ 10.000,00
+ESTOQUE_MAXIMO = 100_000
 
 
 @dataclass
@@ -33,10 +35,14 @@ class Produto:
             erros.append("O nome do produto deve ter pelo menos 3 caracteres.")
         if not isinstance(self.preco_centavos, int) or self.preco_centavos <= 0:
             erros.append("O preço deve ser maior que zero.")
+        elif self.preco_centavos > PRECO_MAXIMO_CENTAVOS:
+            erros.append("O preço máximo é R$ 10.000,00.")
         if not (self.categoria or "").strip():
             erros.append("Informe a categoria.")
         if not isinstance(self.estoque, int) or self.estoque < 0:
             erros.append("O estoque não pode ser negativo.")
+        elif self.estoque > ESTOQUE_MAXIMO:
+            erros.append(f"O estoque máximo é {ESTOQUE_MAXIMO:,} unidades.".replace(",", "."))
         if not COR_HEX.match(self.cor_cobertura or ""):
             erros.append("Cor da cobertura inválida.")
         if not COR_HEX.match(self.cor_forminha or ""):
@@ -54,6 +60,9 @@ class Produto:
             valor = Decimal(t)
         except InvalidOperation:
             raise ErroValidacao("Preço inválido. Use o formato 12,90.") from None
+        # Decimal aceita "NaN" e "Infinity", que quebravam a conversão para int.
+        if not valor.is_finite() or valor * 100 > PRECO_MAXIMO_CENTAVOS:
+            raise ErroValidacao("Preço inválido. Use o formato 12,90 (máximo R$ 10.000,00).")
         return int((valor * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
 
     # ------------------------------------------------------------ persistência
@@ -77,20 +86,25 @@ class Produto:
             params.append(categoria)
         if busca:
             # LOWER nos dois lados: busca sem diferenciar maiúsculas (SQLite e Postgres).
-            sql.append("AND (LOWER(nome) LIKE ? OR LOWER(descricao) LIKE ?)")
-            termo = f"%{busca.lower()}%"
+            # ESCAPE: "%" e "_" digitados pelo cliente são texto, não curingas do LIKE.
+            # "!" é o caractere de escape (igual no SQLite e no PostgreSQL).
+            sql.append("AND (LOWER(nome) LIKE ? ESCAPE '!' OR LOWER(descricao) LIKE ? ESCAPE '!')")
+            literal = busca.lower().replace("!", "!!").replace("%", "!%").replace("_", "!_")
+            termo = f"%{literal}%"
             params += [termo, termo]
         sql.append("ORDER BY destaque DESC, (estoque > 0) DESC, nome")
         return [cls._de_linha(l) for l in get_db().execute(" ".join(sql), params)]
 
     @classmethod
     def buscar_por_id(cls, produto_id):
+        if not id_valido(produto_id):
+            return None
         linha = get_db().execute("SELECT * FROM produtos WHERE id = ?", (produto_id,)).fetchone()
         return cls._de_linha(linha)
 
     @classmethod
     def buscar_varios(cls, ids) -> dict:
-        ids = list(ids)
+        ids = [i for i in ids if id_valido(i)]
         if not ids:
             return {}
         marcadores = ",".join("?" * len(ids))

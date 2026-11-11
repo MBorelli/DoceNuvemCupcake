@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from ..database import agora, get_db
+from ..database import agora, erros_de_integridade, get_db, id_valido
 from .erros import ErroValidacao
 
 EMAIL = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -35,6 +35,8 @@ class Cliente:
 
     @classmethod
     def buscar_por_id(cls, cliente_id):
+        if not id_valido(cliente_id):
+            return None
         linha = get_db().execute("SELECT * FROM clientes WHERE id = ?", (cliente_id,)).fetchone()
         return cls._de_linha(linha)
 
@@ -63,12 +65,18 @@ class Cliente:
         if erros:
             raise ErroValidacao(erros)
 
-        cur = db.execute(
-            """INSERT INTO clientes (nome, email, senha_hash, telefone, is_admin, criado_em)
-               VALUES (?, ?, ?, ?, 0, ?)""",
-            (nome, email, generate_password_hash(senha), telefone or None, agora()),
-        )
-        db.commit()
+        try:
+            cur = db.execute(
+                """INSERT INTO clientes (nome, email, senha_hash, telefone, is_admin, criado_em)
+                   VALUES (?, ?, ?, ?, 0, ?)""",
+                (nome, email, generate_password_hash(senha), telefone or None, agora()),
+            )
+            db.commit()
+        except erros_de_integridade():
+            # Dois cadastros com o mesmo e-mail ao mesmo tempo: a checagem acima passou
+            # para os dois, mas o UNIQUE do banco barra o segundo.
+            db.rollback()
+            raise ErroValidacao("Já existe uma conta com este e-mail.") from None
         return cls.buscar_por_id(cur.lastrowid)
 
     @classmethod
